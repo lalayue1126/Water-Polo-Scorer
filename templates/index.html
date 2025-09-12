@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>水球 記録アプリ</title>
+    <!-- Google Fonts と スタイルシートの読み込み -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>水球 記録アプリ</h1>
+            <div class="score-board">
+                <div class="period-display">
+                    ピリオド: <span id="period-display">1</span>
+                </div>
+                <div class="team-score white">
+                    <span>白</span>
+                    <span id="score-white">0</span>
+                </div>
+                <div class="team-score blue">
+                    <span>青</span>
+                    <span id="score-blue">0</span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="input-grid">
+                <!-- 時間入力電卓 -->
+                <div class="input-group time-calculator">
+                    <label>時間</label>
+                    <input type="text" id="time-display" value="0:00" readonly>
+                    <div class="calculator-buttons">
+                        <button data-value="7">7</button>
+                        <button data-value="8">8</button>
+                        <button data-value="9">9</button>
+                        <button data-value="4">4</button>
+                        <button data-value="5">5</button>
+                        <button data-value="6">6</button>
+                        <button data-value="1">1</button>
+                        <button data-value="2">2</button>
+                        <button data-value="3">3</button>
+                        <button class="wide" data-value="0">0</button>
+                        <button id="clear-time-btn">C</button>
+                    </div>
+                </div>
+
+                <!-- 選手情報とイベント入力 -->
+                <div class="details-inputs">
+                    <div class="input-group">
+                        <label for="player-number">番号</label>
+                        <select id="player-number">
+                            <option value="" selected disabled>番号選択</option>
+                            <!-- 1番から15番までを生成 -->
+                            <script>
+                                for (let i = 1; i <= 15; i++) {
+                                    document.write(`<option value="${i}">${i}</option>`);
+                                }
+                            </script>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        
+                        <label for="team-color">色</label>
+                        <select id="team-color">
+                            <option value="" selected disabled>色選択</option>
+                            <option value="白">白</option>
+                            <option value="青">青</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="event-type">記録</label>
+                        <select id="event-type">
+                            <option value="" selected disabled>イベント選択</option>
+                            <option value="センターボール"># センターボール</option>
+                            <option value="得点">G 得点</option>
+                            <option value="退水">E 退水</option>
+                            <option value="退水得点時">EG 退水得点時</option>
+                            <option value="ペナルティファウル">P ペナルティファウル</option>
+                            <option value="ペナルティ得点時">PG ペナルティ得点時</option>
+                            <option value="タイムアウト">TO タイムアウト</option>
+                            <option value="PSOミス">X PSOミス</option>
+                            <option value="残り時間退水">SR 残り時間退水</option>
+                            <option value="乱暴行為">SV 乱暴行為</option>
+                            <option value="イエローカード">YC イエローカード</option>
+                            <option value="レッドカード">RC レッドカード</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <button id="add-record-btn" class="primary-btn">記録を追加</button>
+        </main>
+        <section class="records-section">
+            <h2>記録一覧</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ピリオド</th>
+                            <th>時間</th>
+                            <th>番号</th>
+                            <th>色</th>
+                            <th>イベント</th>
+                            <th>得点</th>
+                            <th>削除</th>
+                        </tr>
+                    </thead>
+                    <tbody id="record-list">
+                        <!-- 記録がここに追加されます -->
+                    </tbody>
+                </table>
+            </div>
+            <button id="export-csv-btn" class="secondary-btn">CSVで出力</button>
+        </section>
+    </div>
+    <!-- JavaScriptファイルの読み込み -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
