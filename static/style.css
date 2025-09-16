@@ -1,9 +1,7 @@
 /* :root variables define the color palette for the app. */
 :root {
     --primary-color: #007bff;
-    --primary-hover: #0056b3;
     --secondary-color: #6c757d;
-    --secondary-hover: #545b62;
     --background-color: #f8f9fa;
     --card-background: #ffffff;
     --text-color: #212529;
@@ -105,33 +103,21 @@ main {
     background-color: #fff;
     border-radius: 6px;
     cursor: pointer;
+    transition: background-color 0.2s;
 }
+.calculator-buttons button:hover { background-color: #f1f3f5; }
 .calculator-buttons button.wide {
     grid-column: span 2;
 }
-
-.primary-btn, .secondary-btn {
-    width: 100%;
-    padding: 1rem;
-    font-size: 1.1rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-.primary-btn { background-color: var(--primary-color); color: white; }
-.secondary-btn { background-color: var(--secondary-color); color: white; }
 
 .details-inputs {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
-.details-inputs .records-section {
-    margin-top: 1rem;
-}
-.details-inputs .records-section h2 {
-    margin-top: 0;
+
+.records-section {
+    margin-top: 2rem;
 }
 
 .records-section h2 {
@@ -140,7 +126,7 @@ main {
     margin-bottom: 1rem;
 }
 .table-wrapper {
-    max-height: 250px;
+    max-height: 300px;
     overflow-y: auto;
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -197,7 +183,6 @@ tbody tr:hover { background-color: #f1f3f5; }
 }
 .button-row {
     display: flex;
-    justify-content: flex-start;
     gap: 0.5rem;
     width: 100%;
 }
@@ -217,6 +202,47 @@ tbody tr:hover { background-color: #f1f3f5; }
 
 .input-group.full-width {
     grid-column: 1 / -1;
-    margin-top: 1rem;
+    margin-bottom: 1rem;
 }
 
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
+    margin-top: 1rem;
+}
+.primary-btn, .secondary-btn {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.primary-btn { background-color: var(--primary-color); color: white; }
+.secondary-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    margin-top: 3rem
+}
+
+.primary-events {
+    display: grid;
+    /* 画面幅に応じて列数を2から4に自動調整 */
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+}
+
+.primary-events button {
+    font-size: 1.0rem; /* フォントサイズを大きく */
+    font-weight: bold;
+    padding: 0.8rem 0.5rem; /* 上下のパディングを増やす */
+    text-align: center;
+}
+
+.secondary-events {
+    margin-top: 1rem; /* 上のボタン群との間にスペースを確保 */
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}

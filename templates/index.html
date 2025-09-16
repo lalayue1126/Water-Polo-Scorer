@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>水球 記録アプリ</title>
-    <!-- Google Fonts と スタイルシートの読み込み -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -34,62 +33,68 @@
                         <button class="wide" data-value="0">0</button><button id="clear-time-btn">C</button>
                     </div>
                 </div>
-
+                <!-- 番号・色 入力 -->
                 <div class="details-inputs">
                     <div class="input-group">
                         <label>番号</label>
-                        <!-- 番号ボタンをHTMLに直接記述 -->
                         <div id="player-number-buttons" class="button-group">
-                            <div class="button-row">
-                                <button data-value="1">1</button><button data-value="2">2</button><button data-value="3">3</button><button data-value="4">4</button><button data-value="5">5</button>
-                            </div>
-                            <div class="button-row">
-                                <button data-value="6">6</button><button data-value="7">7</button><button data-value="8">8</button><button data-value="9">9</button><button data-value="10">10</button>
-                            </div>
-                            <div class="button-row">
-                                <button data-value="11">11</button><button data-value="12">12</button><button data-value="13">13</button><button data-value="14">14</button><button data-value="15">15</button>
-                            </div>
+                            <div class="button-row"><button data-value="1">1</button><button data-value="2">2</button><button data-value="3">3</button><button data-value="4">4</button><button data-value="5">5</button></div>
+                            <div class="button-row"><button data-value="6">6</button><button data-value="7">7</button><button data-value="8">8</button><button data-value="9">9</button><button data-value="10">10</button></div>
+                            <div class="button-row"><button data-value="11">11</button><button data-value="12">12</button><button data-value="13">13</button><button data-value="14">14</button><button data-value="15">15</button></div>
                         </div>
                     </div>
-
                     <div class="input-group">
                         <label>色</label>
-                        <!-- 色ボタンをHTMLに直接記述 -->
                         <div id="team-color-buttons" class="button-group">
-                            <button data-value="白">白</button>
-                            <button data-value="青">青</button>
+                            <button data-value="白">白</button><button data-value="青">青</button>
                         </div>
                     </div>
                 </div>
             </div>
             
+            <!-- ★★★ 変更点: イベントボタンを2つのグループに分割 ★★★ -->
             <div class="input-group full-width">
                 <label>イベント</label>
-                <div id="event-type-buttons" class="button-group">
-                    <!-- イベントボタンはJSで動的に生成されます -->
+                <!-- 主要なイベントボタン (大きく、2行) -->
+                <div id="primary-event-buttons" class="button-group primary-events">
+                    <button data-value="センターボール"># センターボール</button>
+                    <button data-value="得点">G 得点</button>
+                    <button data-value="退水">E 退水</button>
+                    <button data-value="退水得点">EG 退水得点</button>
+                    <button data-value="ペナルティファール">P ペナルティ</button>
+                    <button data-value="ペナルティ得点">PG ペナルティ得点</button>
+                    <button data-value="タイムアウト">TO タイムアウト</button>
+                </div>
+                <!-- その他のイベントボタン (小さく) -->
+                <div id="secondary-event-buttons" class="button-group secondary-events">
+                    <button data-value="PSOミス">X PSOミス</button>
+                    <button data-value="残り時間退水">SR 残り時間退水</button>
+                    <button data-value="乱暴行為">SV 乱暴行為</button>
+                    <button data-value="イエローカード">YC イエローカード</button>
+                    <button data-value="レッドカード">RC レッドカード</button>
                 </div>
             </div>
 
+            <!-- 記録一覧セクション -->
             <section class="records-section">
                 <h2>記録一覧</h2>
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>P</th><th>時間</th><th>番号</th><th>色</th><th>イベント</th><th>得点</th><th>削除</th>
+                                <th>P</th><th>時間</th><th>番号</th><th>色</th><th>イベント</th><th>得点(白-青)</th><th>削除</th>
                             </tr>
                         </thead>
                         <tbody id="record-list"></tbody>
                     </table>
                 </div>
-                <button id="export-csv-btn" class="secondary-btn">CSVで出力</button>
+                <div class="action-buttons">
+                    <button id="add-record-btn" class="primary-btn">記録を追加</button>
+                    <button id="export-csv-btn" class="secondary-btn">CSVで出力</button>
+                </div>
             </section>
-            
-            <button id="add-record-btn" class="primary-btn">記録を追加</button>
         </main>
     </div>
-
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
-
