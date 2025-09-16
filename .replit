@@ -7,5 +7,9 @@ channel = "stable-25_05"
 packages = ["python313Packages.flask"]
 
 [[ports]]
+localPort = 80
+externalPort = 3000
+
+[[ports]]
 localPort = 81
 externalPort = 80

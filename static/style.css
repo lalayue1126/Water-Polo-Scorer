@@ -83,7 +83,6 @@ main {
 }
 
 .time-calculator input {
-    width: 100%;
     font-size: 1.5rem;
     text-align: center;
     padding: 0.5rem;
@@ -126,8 +125,6 @@ main {
     margin-bottom: 1rem;
 }
 .table-wrapper {
-    max-height: 300px;
-    overflow-y: auto;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     margin-bottom: 1rem;
@@ -147,7 +144,11 @@ thead th {
     top: 0;
     z-index: 1;
 }
-thead th:first-child { width: 30px; }
+thead th:nth-child(1),
+thead th:nth-child(6),
+thead th:nth-child(7) {
+    width: 40px;
+}
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover { background-color: #f1f3f5; }
 .white-cell { background-color: var(--white-team); }
@@ -228,17 +229,18 @@ tbody tr:hover { background-color: #f1f3f5; }
 }
 
 .primary-events {
-    display: grid;
+    display: flex;
     /* 画面幅に応じて列数を2から4に自動調整 */
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 0.75rem;
 }
 
 .primary-events button {
-    font-size: 1.0rem; /* フォントサイズを大きく */
+    font-size: 1.5rem; /* フォントサイズを大きく */
     font-weight: bold;
     padding: 0.8rem 0.5rem; /* 上下のパディングを増やす */
     text-align: center;
+    margin: 0.25rem 1rem 0.25rem 1rem;
 }
 
 .secondary-events {

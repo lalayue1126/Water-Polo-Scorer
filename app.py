@@ -17,4 +17,4 @@ def index():
 # スクリプトが直接実行された場合にサーバーを起動
 if __name__ == '__main__':
   # Replit環境で動作するように設定
-  app.run(host='0.0.0.0', port=81)
+  app.run(host='0.0.0.0', port=80)

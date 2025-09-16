@@ -52,44 +52,46 @@
                 </div>
             </div>
             
-            <!-- ★★★ 変更点: イベントボタンを2つのグループに分割 ★★★ -->
             <div class="input-group full-width">
                 <label>イベント</label>
-                <!-- 主要なイベントボタン (大きく、2行) -->
                 <div id="primary-event-buttons" class="button-group primary-events">
-                    <button data-value="センターボール"># センターボール</button>
-                    <button data-value="得点">G 得点</button>
-                    <button data-value="退水">E 退水</button>
-                    <button data-value="退水得点">EG 退水得点</button>
-                    <button data-value="ペナルティファール">P ペナルティ</button>
-                    <button data-value="ペナルティ得点">PG ペナルティ得点</button>
-                    <button data-value="タイムアウト">TO タイムアウト</button>
+                    <div class="button-row">
+                        <button data-value="センターボール"># センターボール</button>
+                        <button data-value="得点">G 得点</button>
+                        <button data-value="退水">E 退水</button>
+                        <button data-value="退水得点">EG 退水得点</button>
+                    </div>
+                    <div class="button-row">
+                        <button data-value="ペナルティファール">P ペナルティ</button>
+                        <button data-value="ペナルティ得点">PG ペナルティ得点</button>
+                        <button data-value="タイムアウト">TO タイムアウト</button>
+                    </div>
                 </div>
-                <!-- その他のイベントボタン (小さく) -->
                 <div id="secondary-event-buttons" class="button-group secondary-events">
                     <button data-value="PSOミス">X PSOミス</button>
                     <button data-value="残り時間退水">SR 残り時間退水</button>
                     <button data-value="乱暴行為">SV 乱暴行為</button>
                     <button data-value="イエローカード">YC イエローカード</button>
-                    <button data-value="レッドカード">RC レッドカード</button>
+                    <button data-value="レッドカード"> レッドカード</button>
+                </div>
+                <div class="action-buttons">
+                    <button id="add-record-btn" class="primary-btn">記録を追加</button>
                 </div>
             </div>
 
-            <!-- 記録一覧セクション -->
             <section class="records-section">
                 <h2>記録一覧</h2>
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>P</th><th>時間</th><th>番号</th><th>色</th><th>イベント</th><th>得点(白-青)</th><th>削除</th>
+                                <th>P</th><th>時間</th><th>番号</th><th>色</th><th>イベント</th><th>白</th><th>青</th><th>削除</th>
                             </tr>
                         </thead>
                         <tbody id="record-list"></tbody>
                     </table>
                 </div>
                 <div class="action-buttons">
-                    <button id="add-record-btn" class="primary-btn">記録を追加</button>
                     <button id="export-csv-btn" class="secondary-btn">CSVで出力</button>
                 </div>
             </section>
