@@ -1,207 +1,231 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM要素の取得
+    // Get references to DOM elements
     const periodDisplay = document.getElementById('period-display');
     const scoreWhiteDisplay = document.getElementById('score-white');
     const scoreBlueDisplay = document.getElementById('score-blue');
     const timeDisplay = document.getElementById('time-display');
     const calculatorButtons = document.querySelector('.calculator-buttons');
     const clearTimeBtn = document.getElementById('clear-time-btn');
-    const playerNumberSelect = document.getElementById('player-number');
-    const teamColorSelect = document.getElementById('team-color');
-    const eventTypeSelect = document.getElementById('event-type');
     const addRecordBtn = document.getElementById('add-record-btn');
     const recordList = document.getElementById('record-list');
     const exportCsvBtn = document.getElementById('export-csv-btn');
+    const playerNumberContainer = document.getElementById('player-number-buttons');
+    const teamColorContainer = document.getElementById('team-color-buttons');
+    const eventTypeContainer = document.getElementById('event-type-buttons');
 
-    // アプリケーションの状態を管理する変数
+    // App state variables
     let period = 0;
     let timeInput = "";
-    let records = []; // 記録データを格納する配列
+    let records = [];
+    let selectedNumber = null;
+    let selectedColor = null;
+    let selectedEvent = null;
 
     /**
-     * 時間入力電卓のボタンがクリックされたときの処理
+     * Initializes the application by creating event buttons and setting up event listeners.
      */
-    calculatorButtons.addEventListener('click', (e) => {
-        if (e.target.tagName !== 'BUTTON') return;
+    const initializeButtons = () => {
+        // Event buttons are generated dynamically based on this array.
+        const events = [
+            { display: 'センターボール', value: 'センターボール' },
+            { display: 'G 得点', value: '得点' },
+            { display: 'E 退水', value: '退水' },
+            { display: 'EG 退水得点', value: '退水得点' },
+            { display: 'P ペナルティ', value: 'ペナルティファール' },
+            { display: 'PG ペナルティ得点', value: 'ペナルティ得点' },
+            { display: 'X PSOミス', value: 'PSOミス' },
+            { display: 'SR 残り時間退水', value: '残り時間退水' },
+            { display: 'SV 乱暴行為', value: '乱暴行為' },
+            { display: 'TO タイムアウト', value: 'タイムアウト' },
+            { display: 'YC イエローカード', value: 'イエローカード' },
+            { display: 'RC レッドカード', value: 'レッドカード' },
+        ];
 
-        const value = e.target.dataset.value;
-        if (timeInput.length < 4) {
-            timeInput += value;
-            update_time_display();
-        }
-    });
+        events.forEach(event => {
+            const btn = document.createElement('button');
+            btn.textContent = event.display;
+            btn.dataset.value = event.value;
+            eventTypeContainer.appendChild(btn);
+        });
 
-    /**
-     * 時間クリアボタンの処理
-     */
-    clearTimeBtn.addEventListener('click', () => {
-        timeInput = "";
-        update_time_display();
-    });
-
-    /**
-     * 時間表示をフォーマットして更新する関数
-     */
-    const update_time_display = () => {
-        let formattedTime = "0:00";
-        if (timeInput.length === 1) {
-            formattedTime = `0:0${timeInput}`;
-        } else if (timeInput.length === 2) {
-            formattedTime = `0:${timeInput}`;
-        } else if (timeInput.length === 3) {
-            formattedTime = `${timeInput.slice(0, 1)}:${timeInput.slice(1)}`;
-        } else if (timeInput.length === 4) {
-            const minutes = parseInt(timeInput.slice(0, 2), 10);
-            if (minutes < 10) { // 例: 0800 -> 8:00
-                 formattedTime = `${parseInt(timeInput.slice(0,2), 10)}:${timeInput.slice(2)}`;
-            } else { // 10分以上は不正入力として扱いにくいので先頭1文字
-                 formattedTime = `${timeInput.slice(0, 1)}:${timeInput.slice(1,3)}`;
-            }
-        }
-        timeDisplay.value = formattedTime;
+        // Set up a single event listener for each button group.
+        playerNumberContainer.addEventListener('click', handleButtonClick);
+        teamColorContainer.addEventListener('click', handleButtonClick);
+        eventTypeContainer.addEventListener('click', handleButtonClick);
     };
 
-
     /**
-     * 「記録を追加」ボタンの処理
+     * Handles clicks on any of the selection buttons (number, color, event).
+     * @param {Event} e - The click event.
      */
+    const handleButtonClick = (e) => {
+        const clickedButton = e.target;
+        if (clickedButton.tagName !== 'BUTTON') return;
+
+        const container = clickedButton.closest('.button-group');
+        if (!container) return;
+
+        // Deselect any previously selected button in the same group.
+        container.querySelectorAll('button.selected').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+
+        // Select the clicked button.
+        clickedButton.classList.add('selected');
+
+        // Update the corresponding state variable.
+        const value = clickedButton.dataset.value;
+        if (container.id === 'player-number-buttons') selectedNumber = value;
+        if (container.id === 'team-color-buttons') selectedColor = value;
+        if (container.id === 'event-type-buttons') selectedEvent = value;
+    };
+
+    // --- Time Input Calculator ---
+    calculatorButtons.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON') return;
+        const value = e.target.dataset.value;
+        if (timeInput.length < 4) { timeInput += value; updateTimeDisplay(); }
+    });
+    clearTimeBtn.addEventListener('click', () => { timeInput = ""; updateTimeDisplay(); });
+
+    const updateTimeDisplay = () => {
+        let ft = "0:00";
+        if (timeInput.length === 1) ft = `0:0${timeInput}`;
+        else if (timeInput.length === 2) ft = `0:${timeInput}`;
+        else if (timeInput.length === 3) ft = `${timeInput.slice(0, 1)}:${timeInput.slice(1)}`;
+        else if (timeInput.length === 4) {
+            const m = parseInt(timeInput.slice(0, 2), 10);
+            if (m < 10) ft = `${m}:${timeInput.slice(2)}`;
+            else ft = `${timeInput.slice(0, 1)}:${timeInput.slice(1,3)}`;
+        }
+        timeDisplay.value = ft;
+    };
+
+    // --- Core App Logic ---
     addRecordBtn.addEventListener('click', () => {
-        if (timeInput === "" || playerNumberSelect.value === "" || teamColorSelect.value === "" || eventTypeSelect.value === "") {
-            alert("時間を入力してください。");
+        // Validate that all inputs have been selected.
+        if (timeInput === "" || !selectedNumber || !selectedColor || !selectedEvent) {
+            alert("時間とすべての項目を選択してください。");
             return;
         }
 
-        let scoreWhite = 0;
-        let scoreBlue = 0;
-        records.forEach(r => {
-            if (r.event === '得点') {
-                if (r.color === '白') scoreWhite++;
-                else scoreBlue++;
+        // Calculate the score at the time of this record.
+        let scoreWhite = 0, scoreBlue = 0;
+        records.forEach(r => { 
+            if (['得点', 'ペナルティ得点', '退水得点'].includes(r.event)) {
+                if (r.color === '白') scoreWhite++; else scoreBlue++;
             }
         });
-        // 今追加するイベントが「得点」の場合、スコアを先に加算しておく
-        if (eventTypeSelect.value === '得点') {
-            if (teamColorSelect.value === '白') scoreWhite++;
-            else scoreBlue++;
+        if (['得点', 'ペナルティ得点', '退水得点'].includes(selectedEvent)) {
+            if (selectedColor === '白') scoreWhite++; else scoreBlue++;
         }
         const currentScore = `${scoreWhite}-${scoreBlue}`;
-        
-        const newRecord = {
-            id: Date.now(), // 削除用にユニークなIDを付与
-            period: (eventTypeSelect.value === 'センターボール') ? period + 1 : period,
-            time: timeDisplay.value,
-            number: playerNumberSelect.value,
-            color: teamColorSelect.value,
-            event: eventTypeSelect.value,
-            score: currentScore,
+
+        // Create a new record object.
+        const newRecord = { 
+            id: Date.now(), 
+            period: (selectedEvent === 'センターボール') ? period + 1 : period, 
+            time: timeDisplay.value, 
+            number: selectedNumber, 
+            color: selectedColor, 
+            event: selectedEvent, 
+            score: currentScore 
         };
-        
-        // イベントが「センターボール」の場合、ピリオドをインクリメントして表示を更新
+
         if (newRecord.event === 'センターボール') {
             period++;
-            periodDisplay.textContent = period;
         }
-        
+
         records.push(newRecord);
-        render_records();
-
-        // 入力フォームをリセット
-        timeInput = "";
-        update_time_display();
-
-        playerNumberSelect.selectedIndex = 0;
-        teamColorSelect.selectedIndex = 0;
-        eventTypeSelect.selectedIndex = 0;
+        renderRecords();
+        resetInputs();
     });
 
     /**
-     * 記録リストを再描画し、スコアを更新する関数
+     * Resets all input fields and selections to their initial state.
      */
-    const render_records = () => {
-        recordList.innerHTML = ""; // 一旦リストを空にする
-        let scoreWhite = 0;
-        let scoreBlue = 0;
+    const resetInputs = () => {
+        timeInput = ""; 
+        updateTimeDisplay();
+        document.querySelectorAll('.button-group button.selected').forEach(btn => btn.classList.remove('selected'));
+        selectedNumber = null; 
+        selectedColor = null; 
+        selectedEvent = null;
+    };
 
-        records.forEach(record => {
-            // スコア計算
-            if (record.event === '得点') {
-                if (record.color === '白') {
-                    scoreWhite++;
-                } else {
-                    scoreBlue++;
-                }
+    /**
+     * Renders the entire list of records and updates the main score display.
+     */
+    const renderRecords = () => {
+        recordList.innerHTML = "";
+        let scoreWhite = 0, scoreBlue = 0;
+
+        // Sort records by period, then by time descending.
+        records.sort((a, b) => {
+            if (a.period !== b.period) return a.period - b.period;
+            const tA = a.time.split(':').reduce((acc, t) => 60 * acc + +t, 0);
+            const tB = b.time.split(':').reduce((acc, t) => 60 * acc + +t, 0);
+            return tB - tA;
+        });
+
+        records.forEach(rec => {
+            if (['得点', 'ペナルティ得点', '退水得点'].includes(rec.event)) {
+                if (rec.color === '白') scoreWhite++; else scoreBlue++;
             }
-
-            // テーブルに行を追加
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${record.period}</td>
-                <td>${record.time}</td>
-                <td>${record.number}</td>
-                <td class="${record.color === '白' ? 'white-cell' : 'blue-cell'}">${record.color}</td>
-                <td>${record.event}</td>
-                <td>${record.score}</td>
-                <td><button class="delete-btn" data-id="${record.id}">×</button></td>
-            `;
+            row.innerHTML = `<td>${rec.period}</td><td>${rec.time}</td><td>${rec.number}</td><td class="${rec.color === '白' ? 'white-cell' : 'blue-cell'}">${rec.color}</td><td>${rec.event}</td><td>${rec.score}</td><td><button class="delete-btn" data-id="${rec.id}">×</button></td>`;
             recordList.appendChild(row);
         });
 
-        // スコア表示を更新
         scoreWhiteDisplay.textContent = scoreWhite;
         scoreBlueDisplay.textContent = scoreBlue;
+        periodDisplay.textContent = period;
 
-        // 削除ボタンにイベントリスナーを追加
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', delete_record);
-        });
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', deleteRecord));
     };
 
     /**
-     * 特定の記録を削除する関数
+     * Deletes a record based on its ID.
+     * @param {Event} e - The click event from the delete button.
      */
-    const delete_record = (e) => {
-        const id_to_delete = Number(e.target.dataset.id);
-        const recordToDelete = records.find(record => record.id === id_to_delete);
-        if (recordToDelete && recordToDelete.event === 'センターボール') {
+    const deleteRecord = (e) => {
+        const id = Number(e.target.dataset.id);
+        const rec = records.find(r => r.id === id);
+
+        if (rec && rec.event === 'センターボール') {
             period--;
-            periodDisplay.textContent = period;
         }
-        records = records.filter(record => record.id !== id_to_delete);
-        render_records();
+
+        records = records.filter(r => r.id !== id);
+        renderRecords();
     };
 
-
-    /**
-     * 記録データをCSV形式でエクスポートする関数
-     */
+    // --- CSV Export ---
     exportCsvBtn.addEventListener('click', () => {
         if (records.length === 0) {
             alert("エクスポートする記録がありません。");
             return;
         }
-
-        // CSVのヘッダー行
-        let csvContent = "ピリオド,時間,番号,色,イベント,得点\n";
-
-        // 各記録をCSVの行に変換
-        records.forEach(record => {
-            const row = [record.period, record.time, record.number, record.color, record.event].join(',');
-            csvContent += row + "\n";
+        let csv = "ピリオド,時間,番号,色,イベント,得点\n";
+        records.forEach(r => {
+            csv += [r.period, r.time, r.number, r.color, r.event, `"${r.score}"`].join(',') + "\n";
         });
 
-        // BOMを付与してExcelでの文字化けを防ぐ
-        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-        const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]); // BOM for Excel compatibility
+        const blob = new Blob([bom, csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
 
-        // ファイル名を生成
         const now = new Date();
-        const timestamp = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
-        a.download = `waterpolo_record_${timestamp}.csv`;
+        const ts = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}`;
+        a.download = `waterpolo_record_${ts}.csv`;
 
         a.click();
         URL.revokeObjectURL(url);
     });
+
+    // Start the application.
+    initializeButtons();
 });
+

@@ -1,4 +1,4 @@
-/* 基本スタイル */
+/* :root variables define the color palette for the app. */
 :root {
     --primary-color: #007bff;
     --primary-hover: #0056b3;
@@ -33,40 +33,39 @@ body {
     padding: 2rem;
 }
 
-/* ヘッダーとスコアボード */
 header {
     margin-bottom: 2rem;
-    border-bottom: 1px solid var(--border-color);
     padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
 h1 {
     text-align: center;
-    margin-top: 0;
-    color: var(--primary-color);
+    margin: 0 0 1.5rem 0;
 }
 
 .score-board {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    text-align: center;
     font-size: 1.5rem;
     font-weight: bold;
 }
 
-.team-score span:first-child {
-    display: block;
-    font-size: 1rem;
-    font-weight: normal;
+.period-display { font-size: 1.2rem; }
+.team-score span:last-child {
+    display: inline-block;
+    min-width: 40px;
+    text-align: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    margin-left: 0.5rem;
 }
+.team-score.white span:last-child { background-color: var(--white-team); border: 1px solid #ddd; }
+.team-score.blue span:last-child { background-color: var(--blue-team); border: 1px solid #a6c9e0; }
 
-.team-score.white span:last-child { color: #333; }
-.team-score.blue span:last-child { color: #004085; }
-
-/* 入力エリア */
 main {
-    margin-bottom: 2rem;
+    width: 100%;
 }
 
 .input-grid {
@@ -80,55 +79,37 @@ main {
     display: flex;
     flex-direction: column;
 }
-
 .input-group label {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     font-weight: bold;
-    font-size: 0.9rem;
 }
 
-select, input[type="text"] {
+.time-calculator input {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 1rem;
-    background-color: #fff;
-}
-
-input[type="text"]#time-display {
+    font-size: 1.5rem;
     text-align: center;
-    font-size: 2rem;
-    font-weight: bold;
-    background-color: #e9ecef;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 1rem;
 }
-
-/* 時間入力電卓 */
-.time-calculator .calculator-buttons {
+.calculator-buttons {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
-    margin-top: 1rem;
 }
-
-.time-calculator button {
+.calculator-buttons button {
     padding: 1rem;
     font-size: 1.2rem;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
     background-color: #fff;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.2s;
 }
-
-.time-calculator button:hover {
-    background-color: #e9ecef;
-}
-.time-calculator button.wide {
+.calculator-buttons button.wide {
     grid-column: span 2;
 }
 
-/* ボタン */
 .primary-btn, .secondary-btn {
     width: 100%;
     padding: 1rem;
@@ -137,37 +118,33 @@ input[type="text"]#time-display {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.2s;
+}
+.primary-btn { background-color: var(--primary-color); color: white; }
+.secondary-btn { background-color: var(--secondary-color); color: white; }
+
+.details-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.details-inputs .records-section {
+    margin-top: 1rem;
+}
+.details-inputs .records-section h2 {
+    margin-top: 0;
 }
 
-.primary-btn {
-    background-color: var(--primary-color);
-    color: white;
-}
-.primary-btn:hover {
-    background-color: var(--primary-hover);
-}
-
-.secondary-btn {
-    background-color: var(--secondary-color);
-    color: white;
-}
-.secondary-btn:hover {
-    background-color: var(--secondary-hover);
-}
-
-/* 記録一覧テーブル */
 .records-section h2 {
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 0.5rem;
     margin-bottom: 1rem;
 }
 .table-wrapper {
-    max-height: 400px;
+    max-height: 250px;
     overflow-y: auto;
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 table {
     width: 100%;
@@ -182,33 +159,64 @@ thead th {
     background-color: #f8f9fa;
     position: sticky;
     top: 0;
+    z-index: 1;
 }
-tbody tr:last-child td {
-    border-bottom: none;
-}
-tbody tr:hover {
-    background-color: #f1f3f5;
-}
-
+thead th:first-child { width: 30px; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background-color: #f1f3f5; }
 .white-cell { background-color: var(--white-team); }
 .blue-cell { background-color: var(--blue-team); color: #004085; }
-
 .delete-btn {
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    line-height: 24px;
+    background: #dc3545; color: white; border: none; border-radius: 50%;
+    width: 24px; height: 24px; cursor: pointer; line-height: 24px;
 }
 
-/* レスポンシブ対応 */
-@media (max-width: 768px) {
-    body { padding: 1rem; }
-    .container { padding: 1.5rem; }
-    .input-grid {
-        grid-template-columns: 1fr;
-    }
+.button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
+.button-group button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+.button-group button:hover { background-color: #e9ecef; }
+.button-group button.selected {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+#player-number-buttons {
+    flex-direction: column;
+}
+.button-row {
+    display: flex;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+}
+#player-number-buttons button {
+    flex: 1;
+    font-size: 1.2rem;
+    padding: 0.75rem 0.25rem;
+    font-weight: bold;
+}
+
+#team-color-buttons button {
+    flex: 1;
+    font-size: 1.2rem;
+    padding: 0.75rem;
+    font-weight: bold;
+}
+
+.input-group.full-width {
+    grid-column: 1 / -1;
+    margin-top: 1rem;
+}
+
