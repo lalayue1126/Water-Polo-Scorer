@@ -42,22 +42,64 @@ h1 {
     margin: 0 0 1.5rem 0;
 }
 
-.score-board {
+.match-info {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr; /* 日付, 白, 青の列 */
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+.team-input-group {
     display: flex;
+    align-items: center;
+    gap: 0.5rem; /* ラベルと入力欄の間の隙間 */
+}
+.team-input-group label {
+    font-weight: bold;
+    white-space: nowrap; /* ラベルが改行されないように */
+}
+.match-info input {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    width: 100%;
+}
+
+#match-title {
+    width: 280px; /* 対戦名入力欄の幅を少し広めに設定 */
+}
+
+.score-board {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* ピリオド, 白, 青 */
     justify-content: space-around;
     align-items: center;
-    font-size: 1.5rem;
+    font-size: 1.2rem; /* 少し小さくして長いチーム名に対応 */
     font-weight: bold;
+    gap: 1rem;
 }
 
 .period-display { font-size: 1.2rem; }
+.team-score {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.team-score span:first-child {
+    max-width: 150px; /* チーム名が長すぎる場合に省略 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 .team-score span:last-child {
+    font-size: 1.5rem;
     display: inline-block;
     min-width: 40px;
     text-align: center;
     padding: 0.25rem 0.5rem;
     border-radius: 6px;
-    margin-left: 0.5rem;
 }
 .team-score.white span:last-child { background-color: var(--white-team); border: 1px solid #ddd; }
 .team-score.blue span:last-child { background-color: var(--blue-team); border: 1px solid #a6c9e0; }
