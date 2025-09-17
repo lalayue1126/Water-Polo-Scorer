@@ -1,20 +1,26 @@
+# Flaskフレームワークから必要な機能をインポート
 from flask import Flask, render_template
 
-# Flaskアプリケーションを初期化
+# Flaskアプリケーションのインスタンスを作成
 app = Flask(__name__)
 
-
-# ルートURL ('/') にアクセスがあった場合に呼ばれる関数
+# --- ルーティング定義 ---
+# WebサイトのルートURL ('/') にアクセスがあった場合に実行される関数
 @app.route('/')
 def index():
-  """
-    メインページを表示します。
-    'index.html'をレンダリングしてユーザーに返します。
     """
-  return render_template('index.html')
+    メインページを表示します。
+    'templates'フォルダ内の'index.html'を読み込み、
+    ブラウザに表示させるためのHTMLコンテンツとして返却します。
+    """
+    return render_template('index.html')
 
-
-# スクリプトが直接実行された場合にサーバーを起動
+# --- サーバー起動 ---
+# このスクリプトが直接実行された場合にのみ、以下のコードが実行される
 if __name__ == '__main__':
-  # Replit環境で動作するように設定
-  app.run(host='0.0.0.0', port=80)
+    """
+    開発用のWebサーバーを起動します。
+    Replit環境で外部からアクセスできるように、host='0.0.0.0'に設定しています。
+    """
+    app.run(host='0.0.0.0', port=80)
+

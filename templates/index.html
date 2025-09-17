@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>水球 記録アプリ</title>
+    <!-- Google Fonts と スタイルシートの読み込み -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -11,29 +12,31 @@
 </head>
 <body>
     <div class="container">
+        <!-- ヘッダー: タイトル、試合情報、スコアボード -->
         <header>
             <h1>水球 記録アプリ</h1>
             <div class="match-info">
                 <input type="date" id="match-date">
                 <div class="team-input-group">
                     <label for="team-name-white">白</label>
-                    <input type="text" id="team-name-white" placeholder="白チーム名">
+                    <input type="text" id="team-name-white" placeholder="チーム名">
                 </div>
                 <div class="team-input-group">
                     <label for="team-name-blue">青</label>
-                    <input type="text" id="team-name-blue" placeholder="青チーム名">
+                    <input type="text" id="team-name-blue" placeholder="チーム名">
                 </div>
             </div>
             <div class="score-board">
                 <div class="period-display">ピリオド: <span id="period-display">0</span></div>
-                <div class="team-score white"><span>白</span> <span id="score-white">0</span></div>
-                <div class="team-score blue"><span>青</span> <span id="score-blue">0</span></div>
+                <div class="team-score white"><span id="team-label-white">白</span> <span id="score-white">0</span></div>
+                <div class="team-score blue"><span id="team-label-blue">青</span> <span id="score-blue">0</span></div>
             </div>
         </header>
 
+        <!-- メインコンテンツ: 入力エリア -->
         <main>
             <div class="input-grid">
-                <!-- 時間入力電卓 -->
+                <!-- 左側: 時間入力電卓 -->
                 <div class="input-group time-calculator">
                     <label>時間</label>
                     <input type="text" id="time-display" value="0:00" readonly>
@@ -44,7 +47,7 @@
                         <button class="wide" data-value="0">0</button><button id="clear-time-btn">C</button>
                     </div>
                 </div>
-                <!-- 番号・色 入力 -->
+                <!-- 右側: 番号・色 入力 -->
                 <div class="details-inputs">
                     <div class="input-group">
                         <label>番号</label>
@@ -63,8 +66,10 @@
                 </div>
             </div>
             
+            <!-- イベント入力エリア -->
             <div class="input-group full-width">
                 <label>イベント</label>
+                <!-- 主要イベント -->
                 <div id="primary-event-buttons" class="button-group primary-events">
                     <div class="button-row">
                         <button data-value="センターボール"># センターボール</button>
@@ -78,36 +83,41 @@
                         <button data-value="タイムアウト">TO タイムアウト</button>
                     </div>
                 </div>
+                <!-- その他のイベント -->
                 <div id="secondary-event-buttons" class="button-group secondary-events">
                     <button data-value="PSOミス">X PSOミス</button>
                     <button data-value="残り時間退水">SR 残り時間退水</button>
                     <button data-value="乱暴行為">SV 乱暴行為</button>
                     <button data-value="イエローカード">YC イエローカード</button>
-                    <button data-value="レッドカード"> レッドカード</button>
+                    <button data-value="レッドカード">RC レッドカード</button>
                 </div>
-                <div class="action-buttons">
-                    <button id="add-record-btn" class="primary-btn">記録を追加</button>
-                </div>
+                <!-- 記録追加ボタン -->
+                <button id="add-record-btn" class="primary-btn">記録を追加</button>
             </div>
 
+            <!-- 記録一覧表示エリア -->
             <section class="records-section">
                 <h2>記録一覧</h2>
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>P</th><th>時間</th><th>番号</th><th>色</th><th>イベント</th><th>白</th><th>青</th><th>削除</th>
+                                <th>#</th><th>P</th><th>時間</th><th>番号</th><th>色</th><th>イベント</th><th>白</th><th>青</th><th>削除</th>
                             </tr>
                         </thead>
                         <tbody id="record-list"></tbody>
                     </table>
                 </div>
+                <!-- CSV出力ボタン -->
                 <div class="action-buttons">
                     <button id="export-csv-btn" class="secondary-btn">CSVで出力</button>
                 </div>
             </section>
         </main>
     </div>
+
+    <!-- JavaScriptファイルの読み込み -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
+

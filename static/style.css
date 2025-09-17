@@ -1,4 +1,4 @@
-/* :root variables define the color palette for the app. */
+/* --- 基本設定とカラーパレット --- */
 :root {
     --primary-color: #007bff;
     --secondary-color: #6c757d;
@@ -31,6 +31,7 @@ body {
     padding: 2rem;
 }
 
+/* --- ヘッダー --- */
 header {
     margin-bottom: 2rem;
     padding-bottom: 1.5rem;
@@ -39,60 +40,53 @@ header {
 
 h1 {
     text-align: center;
-    margin: 0 0 1.5rem 0;
+    margin: 0 0: 1rem 0;
 }
 
 .match-info {
     display: grid;
-    grid-template-columns: auto 1fr 1fr; /* 日付, 白, 青の列 */
+    grid-template-columns: auto 1fr 1fr;
     gap: 1rem;
     align-items: center;
     margin-bottom: 1.5rem;
 }
+
 .team-input-group {
     display: flex;
     align-items: center;
-    gap: 0.5rem; /* ラベルと入力欄の間の隙間 */
+    gap: 0.5rem;
 }
+
 .team-input-group label {
     font-weight: bold;
-    white-space: nowrap; /* ラベルが改行されないように */
+    white-space: nowrap;
 }
+
 .match-info input {
     padding: 0.5rem;
     border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 0.9rem;
     font-family: inherit;
-    width: 100%;
-}
-
-#match-title {
-    width: 280px; /* 対戦名入力欄の幅を少し広めに設定 */
+    width:70%;
 }
 
 .score-board {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr; /* ピリオド, 白, 青 */
-    justify-content: space-around;
+    grid-template-columns: 3fr auto auto;
     align-items: center;
-    font-size: 1.2rem; /* 少し小さくして長いチーム名に対応 */
+    font-size: 1.2rem;
     font-weight: bold;
     gap: 1rem;
 }
 
-.period-display { font-size: 1.2rem; }
-.team-score {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
 .team-score span:first-child {
-    max-width: 150px; /* チーム名が長すぎる場合に省略 */
+    max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
 .team-score span:last-child {
     font-size: 1.5rem;
     display: inline-block;
@@ -104,6 +98,8 @@ h1 {
 .team-score.white span:last-child { background-color: var(--white-team); border: 1px solid #ddd; }
 .team-score.blue span:last-child { background-color: var(--blue-team); border: 1px solid #a6c9e0; }
 
+
+/* --- メインコンテンツ & 入力エリア --- */
 main {
     width: 100%;
 }
@@ -119,24 +115,27 @@ main {
     display: flex;
     flex-direction: column;
 }
+
 .input-group label {
     margin-bottom: 0.75rem;
     font-weight: bold;
 }
 
 .time-calculator input {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     text-align: center;
-    padding: 0.5rem;
+    padding: 0.4rem;
     border-radius: 6px;
     border: 1px solid var(--border-color);
     margin-bottom: 1rem;
 }
+
 .calculator-buttons {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
 }
+
 .calculator-buttons button {
     padding: 1rem;
     font-size: 1.2rem;
@@ -147,9 +146,7 @@ main {
     transition: background-color 0.2s;
 }
 .calculator-buttons button:hover { background-color: #f1f3f5; }
-.calculator-buttons button.wide {
-    grid-column: span 2;
-}
+.calculator-buttons button.wide { grid-column: span 2; }
 
 .details-inputs {
     display: flex;
@@ -157,54 +154,18 @@ main {
     gap: 1.5rem;
 }
 
-.records-section {
-    margin-top: 2rem;
-}
-
-.records-section h2 {
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.5rem;
+.input-group.full-width {
+    grid-column: 1 / -1;
     margin-bottom: 1rem;
 }
-.table-wrapper {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    margin-bottom: 1rem;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-th, td {
-    padding: 0.75rem 1rem;
-    text-align: center;
-    border-bottom: 1px solid var(--border-color);
-}
-thead th {
-    background-color: #f8f9fa;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-}
-thead th:nth-child(1),
-thead th:nth-child(6),
-thead th:nth-child(7) {
-    width: 40px;
-}
-tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover { background-color: #f1f3f5; }
-.white-cell { background-color: var(--white-team); }
-.blue-cell { background-color: var(--blue-team); color: #004085; }
-.delete-btn {
-    background: #dc3545; color: white; border: none; border-radius: 50%;
-    width: 24px; height: 24px; cursor: pointer; line-height: 24px;
-}
 
+/* --- ボタン共通スタイル --- */
 .button-group {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
 }
+
 .button-group button {
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
@@ -221,19 +182,25 @@ tbody tr:hover { background-color: #f1f3f5; }
     border-color: var(--primary-color);
 }
 
-#player-number-buttons {
-    flex-direction: column;
-}
 .button-row {
     display: flex;
     gap: 0.5rem;
     width: 100%;
 }
-#player-number-buttons button {
+
+/* --- 番号・色・イベント ボタン個別スタイル --- */
+#player-number-buttons,
+.primary-events {
+    flex-direction: column;
+}
+
+#player-number-buttons button,
+.primary-events button {
     flex: 1;
-    font-size: 1.2rem;
-    padding: 0.75rem 0.25rem;
+    font-size: 1.0rem;
     font-weight: bold;
+    padding: 0.8rem 0.5rem;
+    text-align: center;
 }
 
 #team-color-buttons button {
@@ -243,17 +210,12 @@ tbody tr:hover { background-color: #f1f3f5; }
     font-weight: bold;
 }
 
-.input-group.full-width {
-    grid-column: 1 / -1;
-    margin-bottom: 1rem;
+.secondary-events {
+    margin-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
 }
 
-.action-buttons {
-    display: flex;
-    gap: 1rem;
-    flex-direction: column;
-    margin-top: 1rem;
-}
 .primary-btn, .secondary-btn {
     width: 100%;
     padding: 0.8rem;
@@ -263,30 +225,87 @@ tbody tr:hover { background-color: #f1f3f5; }
     border-radius: 8px;
     cursor: pointer;
 }
-.primary-btn { background-color: var(--primary-color); color: white; }
+.primary-btn {
+    background-color: var(--primary-color);
+    color: white;
+    margin-top: 1.5rem;
+}
 .secondary-btn {
     background-color: var(--secondary-color);
     color: white;
-    margin-top: 3rem
+}
+.action-buttons {
+    margin-top: 1rem;
 }
 
-.primary-events {
-    display: flex;
-    /* 画面幅に応じて列数を2から4に自動調整 */
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 0.75rem;
+/* --- 記録一覧テーブル --- */
+.records-section {
+    margin-top: 2rem;
 }
 
-.primary-events button {
-    font-size: 1.5rem; /* フォントサイズを大きく */
-    font-weight: bold;
-    padding: 0.8rem 0.5rem; /* 上下のパディングを増やす */
+.records-section h2 {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.table-wrapper {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow-x: auto; /* 横幅が狭い画面でテーブルがはみ出た場合にスクロールさせる */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 0.75rem 1rem;
     text-align: center;
-    margin: 0.25rem 1rem 0.25rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
 }
 
-.secondary-events {
-    margin-top: 1rem; /* 上のボタン群との間にスペースを確保 */
-    border-top: 1px solid var(--border-color);
-    padding-top: 1rem;
+thead th {
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* テーブル列幅の調整 */
+thead th:nth-child(1), /* # */
+thead th:nth-child(2), /* P */
+thead th:nth-child(7), /* 白 */
+thead th:nth-child(8) { /* 青 */
+    width: 40px;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+.white-cell { background-color: var(--white-team); }
+.blue-cell { background-color: var(--blue-team); color: #004085; }
+
+.delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    line-height: 24px;
+}
+
+.time-calculator input.error {
+    border-color: #dc3545; /* エラー時に枠線を赤くする */
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25); /* ほのかに赤い光彩を追加 */
 }
