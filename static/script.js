@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const teamColorContainer = document.getElementById('team-color-buttons');
     const primaryEventContainer = document.getElementById('primary-event-buttons');
     const secondaryEventContainer = document.getElementById('secondary-event-buttons');
+    const resetAllBtn = document.getElementById('reset-all-btn');
 
     // アプリケーションの状態を管理する変数
     let period = 0;              // 現在のピリオド
@@ -34,6 +35,43 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedColor = null;    // 選択中のチーム色
     let selectedEvent = null;    // 選択中のイベント
 
+    /**
+     * 現在の記録をローカルストレージに保存する
+     */
+    const saveRecords = () => {
+        // 試合情報（日付、チーム名など）も一緒に保存する
+        const appState = {
+            matchDate: matchDateInput.value,
+            teamWhite: teamNameWhiteInput.value,
+            teamBlue: teamNameBlueInput.value,
+            records: records
+        };
+        // オブジェクトをJSON文字列に変換して保存
+        localStorage.setItem('waterPoloAppState', JSON.stringify(appState));
+    };
+
+    /**
+     * ローカルストレージから記録を読み込む
+     */
+    const loadRecords = () => {
+        const savedState = localStorage.getItem('waterPoloAppState');
+        if (savedState) {
+            const appState = JSON.parse(savedState);
+            // 記録データを復元
+            records = appState.records || [];
+            // 試合情報も復元
+            matchDateInput.value = appState.matchDate || new Date().toISOString().split('T')[0];
+            teamNameWhiteInput.value = appState.teamWhite || '';
+            teamNameBlueInput.value = appState.teamBlue || '';
+
+            updateTeamLabels();
+            renderRecords();
+        } else {
+            // 保存されたデータがない場合は、日付を今日に設定
+            matchDateInput.value = new Date().toISOString().split('T')[0];
+        }
+    };
+    
     // --- 初期化処理 ---
 
     /**
@@ -55,8 +93,29 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeBtn.addEventListener('click', () => { timeInput = ""; updateTimeDisplay(); });
         addRecordBtn.addEventListener('click', addRecord);
         exportCsvBtn.addEventListener('click', exportCsv);
+
+        resetAllBtn.addEventListener('click', () => {
+            // ユーザーに最終確認を行う
+            if (confirm("本当にすべての記録をリセットしますか？この操作は元に戻せません。")) {
+                records = [];
+                period = 0;
+                localStorage.removeItem('waterPoloAppState'); // 保存データを削除
+                // 入力欄もリセット
+                teamNameWhiteInput.value = '';
+                teamNameBlueInput.value = '';
+                matchDateInput.value = new Date().toISOString().split('T')[0];
+
+                updateTeamLabels();
+                renderRecords();
+                resetInputs();
+            }
+        });
+        
+        loadRecords();
     };
 
+    
+    
     // --- イベントハンドラ関数 ---
 
     /**
@@ -142,6 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         records.push(newRecord);
         renderRecords();
         resetInputs();
+        saveRecords();
     };
 
     /**
@@ -158,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         records = records.filter(record => record.id !== idToDelete);
         renderRecords();
+        saveRecords();
     };
 
     /**
@@ -297,4 +358,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- アプリケーションの実行開始 ---
     initializeApp();
 });
-
