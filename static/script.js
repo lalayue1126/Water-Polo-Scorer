@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sanitizedBlue = teamBlue.replace(/\s+/g, '_').replace(/[\\/:*?"<>|]/g, '_');
         const filename = `waterpolo_record_${matchDate}_${sanitizedWhite}_vs_${sanitizedBlue}.csv`;
 
-        let csvContent = "No,ピリオド,時間,番号,色,イベント,得点(白),得点(青)\n";
+        let csvContent = "No,ピリオド,時間,番号,色,イベント,得点白,得点青\n";
         let runningScoreWhite = 0;
         let runningScoreBlue = 0;
         const isGoalEvent = (event) => ['得点', 'ペナルティ得点', '退水得点'].includes(event);
