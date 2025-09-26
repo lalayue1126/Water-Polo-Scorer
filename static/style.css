@@ -15,7 +15,7 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     margin: 0;
-    padding: 2rem;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -24,7 +24,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 800px;
+    max-width: 1200px;
     background-color: var(--card-background);
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -159,6 +159,70 @@ main {
     margin-bottom: 1rem;
 }
 
+/* --- 退水管理テーブル --- */
+.exclusion-management {
+    margin-bottom: 1.5rem;
+}
+
+#exclusion-table {
+    width: 100%;
+    border-collapse: collapse;
+    /* ★★★★★★★★★★★★★★★★★★★★★
+       レイアウトを固定にすることで、列幅が内容に左右されなくなります。
+       これが最も重要な設定です。
+    ★★★★★★★★★★★★★★★★★★★★★ */
+    table-layout: fixed;
+}
+
+/* すべてのセルの共通スタイル */
+#exclusion-table th,
+#exclusion-table td {
+    border: 1px solid var(--border-color);
+    text-align: center;
+    padding: 0.25rem;
+    font-size: 0.75rem;
+    height: 60px;
+    vertical-align: top;
+    white-space: pre-wrap;
+    /* ★★★★★★★★★★★★★★★★★★★★★
+       万が一、文字がはみ出しそうな場合に強制的に折り返す設定を追加します。
+    ★★★★★★★★★★★★★★★★★★★★★ */
+    word-wrap: break-word;
+}
+
+/* ヘッダー行（選手番号）のスタイル */
+#exclusion-table thead th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+/* 1列目（チーム名の列）の幅を固定で指定 */
+#exclusion-table th:first-child {
+    width: 45px;
+}
+
+/* チーム名セルのスタイル */
+#exclusion-table tbody th {
+    font-weight: bold;
+    background-color: #f8f9fa;
+}
+
+/* 白チームの行のスタイル */
+#fouls-row-white td {
+    background-color: var(--white-team);
+}
+
+/* 青チームの行のスタイル */
+#fouls-row-blue td {
+    background-color: var(--blue-team);
+}
+
+/* 退水3回で永久退水になった選手セル */
+#exclusion-table td.excluded {
+    background-color: #f8d7da;
+    color: #721c24;
+    font-weight: bold;
+}
 /* --- ボタン共通スタイル --- */
 .button-group {
     display: flex;
@@ -273,14 +337,6 @@ thead th {
     position: sticky;
     top: 0;
     z-index: 1;
-}
-
-/* テーブル列幅の調整 */
-thead th:nth-child(1), /* # */
-thead th:nth-child(2), /* P */
-thead th:nth-child(7), /* 白 */
-thead th:nth-child(8) { /* 青 */
-    width: 40px;
 }
 
 tbody tr:last-child td {

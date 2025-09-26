@@ -307,6 +307,61 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
+     * 退水管理テーブルを記録データに基づいて再描画する
+     */
+    const renderExclusionTable = () => {
+        // 1. テーブルの全セルを一旦クリアする
+        document.querySelectorAll('#exclusion-table-body td').forEach(cell => {
+            cell.innerHTML = '';
+            cell.classList.remove('excluded');
+        });
+
+        // 2. 記録の中から、個人のファウルとなるイベントのみを抽出する
+        const exclusionRecords = records.filter(record =>
+            record.event.includes('退水') || record.event.includes('ペナルティ') || record.event.includes('乱暴行為')
+        );
+
+        // 3. 選手ごとにファウル情報をまとめる
+        const foulsByPlayer = {}; // 例: {'white-5': ['E1 5:30', 'P2 2:10']}
+        exclusionRecords.forEach(record => {
+            const color = record.color === '白' ? 'white' : 'blue';
+            const playerKey = `${color}-${record.number}`;
+            if (!foulsByPlayer[playerKey]) {
+                foulsByPlayer[playerKey] = [];
+            }
+
+            // 4. イベント内容に応じて表示用のコード(E, P, SV)を決定する
+            let eventCode;
+            if (record.event.includes('ペナルティ')) {
+                eventCode = 'P';
+            } else if (record.event.includes('乱暴行為')) {
+                eventCode = 'SV';
+            } else { // '退水', '退水得点', '残り時間退水' はすべて 'E' として扱う
+                eventCode = 'E';
+            }
+
+            // 5. 指定されたフォーマットの文字列を作成して追加する
+            const foulString = `${eventCode}${record.period} ${record.time}`;
+            foulsByPlayer[playerKey].push(foulString);
+        });
+
+        // 6. まとめたファウル情報をテーブルの各セルに描画する
+        for (const playerKey in foulsByPlayer) {
+            const [color, number] = playerKey.split('-');
+            const cell = document.getElementById(`fouls-${color}-${number}`);
+            if (cell) {
+                // ファウル情報を改行で区切って表示
+                cell.innerHTML = foulsByPlayer[playerKey].join('<br>');
+
+                // ファウルが3回以上、またはSV（乱暴行為）が含まれる場合はセルを赤くする
+                if (foulsByPlayer[playerKey].length >= 3 || foulsByPlayer[playerKey].some(foul => foul.startsWith('SV'))) {
+                    cell.classList.add('excluded');
+                }
+            }
+        }
+    };
+
+    /**
      * 記録一覧テーブルとスコアボードを再描画する
      */
     const renderRecords = () => {
@@ -345,6 +400,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // ピリオドはグローバル変数ではなく、記録から再計算して表示
         const currentPeriod = calculateCurrentPeriod();
         periodDisplay.textContent = currentPeriod;
+        
+        renderExclusionTable();
 
         document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', deleteRecord));
     };
