@@ -33,8 +33,8 @@ body {
 
 /* --- ヘッダー --- */
 header {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -108,7 +108,7 @@ main {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 10px;
 }
 
 .input-group {
