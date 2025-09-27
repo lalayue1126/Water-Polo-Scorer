@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeBtn.addEventListener('click', () => { timeInput = ""; updateTimeDisplay(); });
         addRecordBtn.addEventListener('click', addRecord);
         exportCsvBtn.addEventListener('click', exportCsv);
+        recordList.addEventListener('click', handleRecordClick);
 
         resetAllBtn.addEventListener('click', () => {
             if (confirm("本当にすべての記録をリセットしますか？この操作は元に戻せません。")) {
@@ -181,11 +182,19 @@ document.addEventListener('DOMContentLoaded', () => {
             timeDisplay.classList.add('error');
             return;
         }
+        const numberOptionalEvents = ['TO タイムアウト', 'YC イエローカード', 'RC レッドカード'];
+        const isNumberRequired = selectedEvent && !numberOptionalEvents.includes(selectedEvent);
+
+        // 必須項目チェック
         if (!timeValue || timeValue === "0:00" || !selectedNumber || !selectedColor || !selectedEvent) {
-            alert("時間とすべての項目を選択してください。");
+            alert("時間、番号（不明な場合は「？」）、色、イベントをすべて選択してください。");
             return;
         }
-
+        // 番号が必須のイベントで、番号が選択されていない場合
+        if (isNumberRequired && !selectedNumber) {
+            alert("このイベントには選手番号の選択が必要です。");
+            return;
+        }        
         // ★修正: ピリオドは追加時に直接インクリメントせず、計算関数から取得する
         const currentPeriod = calculateCurrentPeriod();
         const newRecordPeriod = selectedEvent.includes('センターボール') ? currentPeriod + 1 : currentPeriod;
@@ -211,6 +220,62 @@ document.addEventListener('DOMContentLoaded', () => {
         saveRecords();
     };
 
+    /**
+     * 記録一覧の行がクリックされたときの処理
+     */
+    const handleRecordClick = (e) => {
+        // 【1. ガード処理】 削除ボタンが押されたら、編集処理はしない
+        if (e.target.classList.contains('delete-btn')) {
+            return;
+        }
+
+        // 【2. クリックされた行の特定】
+        // クリックされた場所から一番近い <tr> (テーブルの行) を探す
+        const row = e.target.closest('tr');
+        // 行が見つからない、または行に記録IDがなければ処理を中断
+        if (!row || !row.dataset.id) return;
+
+        // 【3. 編集対象の記録データを取得】
+        // 行に埋め込まれたIDを使って、全記録データ(records)の中から該当のものを探し出す
+        const recordId = Number(row.dataset.id);
+        const record = records.find(r => r.id === recordId);
+
+        // 【4. 編集可能かチェック】
+        // 探し出した記録の選手番号が「？」でなければ、編集する必要がないので処理を中断
+        if (!record || record.number !== '?') {
+            return;
+        }
+
+        // 【5. ユーザーに新しい番号を入力してもらう】
+        // promptという小さな入力ウィンドウを表示して、新しい番号の入力を促す
+        const newNumberStr = prompt("この記録の正しい選手番号を入力してください（1-15）：", "");
+
+        // 【6. 入力内容のチェック (1)】
+        // 入力がキャンセルされたり、空欄だった場合は処理を中断
+        if (newNumberStr === null || newNumberStr.trim() === "") {
+            return;
+        }
+
+        // 【7. 入力内容のチェック (2)】
+        // 入力された文字を、計算可能な「数値」に変換する
+        const newNumber = parseInt(newNumberStr, 10);
+        // 数値でない、または1～15の範囲外の場合はエラーメッセージを表示して処理を中断
+        if (isNaN(newNumber) || newNumber < 1 || newNumber > 15) {
+            alert("エラー: 1から15までの半角数字で入力してください。");
+            return;
+        }
+
+        // 【8. 記録データの更新】
+        // すべてのチェックを通過したら、記録の番号を新しい番号に書き換える
+        record.number = newNumber.toString();
+
+        // 【9. 画面の再描画と保存】
+        // 変更を画面に反映させるために、記録一覧と退水管理表を再描画する
+        renderRecords();
+        // 変更をブラウザに保存して、次回開いたときもデータが残るようにする
+        saveRecords();
+    };
+    
     /**
      * 記録を削除する
      */
@@ -389,7 +454,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('tr');
             // イベント名はスペースより前（G, EGなど）を表示
             const eventShort = record.event.split(' ')[0];
-            row.innerHTML = `<td>${index + 1}</td><td>${record.period}</td><td>${record.time}</td><td>${record.number}</td><td class="${record.color === '白' ? 'white-cell' : 'blue-cell'}">${record.color}</td><td>${eventShort}</td><td>${runningScoreWhite}</td><td>${runningScoreBlue}</td><td><button class="delete-btn" data-id="${record.id}">×</button></td>`;
+            // 番号が「？」の行に 'unknown-number' クラスを付与
+            if (record.number === '?') {
+                row.classList.add('unknown-number');
+            }
+            // 各行に、その行の記録IDをデータとして埋め込む
+            row.dataset.id = record.id;
+            row.innerHTML = `<td>${index + 1}</td><td>${record.period}</td><td>${record.time}</td><td>${record.number || '-'}</td><td class="${record.color === '白' ? 'white-cell' : 'blue-cell'}">${record.color}</td><td>${eventShort}</td><td>${runningScoreWhite}</td><td>${runningScoreBlue}</td><td><button class="delete-btn" data-id="${record.id}">×</button></td>`;
+            // ...
             recordList.appendChild(row);
         });
 

@@ -365,3 +365,20 @@ tbody tr:hover {
     border-color: #dc3545; /* エラー時に枠線を赤くする */
     box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25); /* ほのかに赤い光彩を追加 */
 }
+
+/* --- 番号「？」ボタンのスタイル調整 --- */
+#player-number-buttons .button-row button[data-value="?"] {
+    background-color: #fffbe6; /* 少し黄色くして目立たせる */
+    font-weight: bold;
+    color: #856404;
+    width: 100%; /* ボタンの幅を他の行と合わせる */
+}
+
+/* --- 記録一覧の「？」を含む行のスタイル --- */
+#record-list tr.unknown-number {
+    cursor: pointer; /* マウスカーソルを指マークに */
+    background-color: #fff9db; /* 行を少し黄色くして目立たせる */
+}
+#record-list tr.unknown-number:hover {
+    background-color: #fff3bf; /* マウスオーバーでさらに色を濃く */
+}
