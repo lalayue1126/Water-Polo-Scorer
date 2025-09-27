@@ -182,19 +182,25 @@ document.addEventListener('DOMContentLoaded', () => {
             timeDisplay.classList.add('error');
             return;
         }
+        // ★★★ ここから置き換え ★★★
+        // 番号の選択が任意となるイベントのリストを定義
         const numberOptionalEvents = ['TO タイムアウト', 'YC イエローカード', 'RC レッドカード'];
-        const isNumberRequired = selectedEvent && !numberOptionalEvents.includes(selectedEvent);
 
-        // 必須項目チェック
-        if (!timeValue || timeValue === "0:00" || !selectedNumber || !selectedColor || !selectedEvent) {
-            alert("時間、番号（不明な場合は「？」）、色、イベントをすべて選択してください。");
+        // 時間、色、イベントは常に必須項目としてチェック
+        if (!timeValue || timeValue === "0:00" || !selectedColor || !selectedEvent) {
+            alert("時間、色、イベントは必ず選択してください。");
             return;
         }
-        // 番号が必須のイベントで、番号が選択されていない場合
+
+        // 選択されたイベントが「番号必須」かどうかを判断
+        const isNumberRequired = !numberOptionalEvents.includes(selectedEvent);
+
+        // もし番号が必須のイベントで、かつ番号が選択されていない場合のみエラーを表示
         if (isNumberRequired && !selectedNumber) {
-            alert("このイベントには選手番号の選択が必要です。");
+            alert("このイベントには選手番号の選択が必要です。（不明な場合は「？」を選択してください）");
             return;
-        }        
+        }
+        // ★★★ ここまで置き換え ★★★        
         // ★修正: ピリオドは追加時に直接インクリメントせず、計算関数から取得する
         const currentPeriod = calculateCurrentPeriod();
         const newRecordPeriod = selectedEvent.includes('センターボール') ? currentPeriod + 1 : currentPeriod;
