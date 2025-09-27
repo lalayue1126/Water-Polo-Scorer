@@ -388,8 +388,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // 2. 記録の中から、個人のファウルとなるイベントのみを抽出する
+        const foulCodes = ['E ', 'P ', 'SR ', 'SV ']; // ファウルと見なすイベントコードのリスト
         const exclusionRecords = records.filter(record =>
-            record.event.includes('退水') || record.event.includes('ペナルティ') || record.event.includes('乱暴行為')
+            record.number && foulCodes.some(code => record.event.startsWith(code))
         );
 
         // 3. 選手ごとにファウル情報をまとめる
@@ -446,10 +447,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 表示前にソート
         records.sort((a, b) => {
-            if (a.period !== b.period) return a.period - b.period;
-            const timeToSec = (time) => time.split(':').reduce((acc, t, i) => acc + parseInt(t) * (i === 0 ? 60 : 1), 0);
-            if (timeToSec(a.time) !== timeToSec(b.time)) return timeToSec(b.time) - timeToSec(a.time);
-            return a.id - b.id; // 同じ時間の場合は追加された順
+            // ルール1: ピリオドが違う場合は、ピリオドの昇順で並べる
+            if (a.period !== b.period) {
+                return a.period - b.period;
+            }
+            // ルール2: 時間が違う場合は、時間の降順（残り時間が多い順）で並べる
+            const timeToSec = (time) => {
+                const parts = time.split(':').map(Number);
+                return parts[0] * 60 + parts[1];
+            };
+            const timeA = timeToSec(a.time);
+            const timeB = timeToSec(b.time);
+            if (timeA !== timeB) {
+                return timeB - timeA;
+            }
+            // ルール3: ピリオドも時間も同じ場合は、先に追加された順（IDが小さい順）で並べる
+            return a.id - b.id;
         });
 
         records.forEach((record, index) => {
