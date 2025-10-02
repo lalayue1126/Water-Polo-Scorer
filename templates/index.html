@@ -4,13 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>水球 記録アプリ</title>
+    <!-- Google Fonts と スタイルシートの読み込み -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <!-- 全体を囲むコンテナ -->
     <div class="container">
+        <!-- ヘッダー: タイトル、試合情報、スコアボード -->
         <header>
             <h1>水球 記録アプリ</h1>
             <div class="match-info">
@@ -32,8 +35,10 @@
             </div>
         </header>
 
+        <!-- メインコンテンツ: 入力エリア -->
         <main>
             <div class="input-grid">
+                <!-- 左側: 時間入力電卓 -->
                 <div class="input-group time-calculator">
                     <label>時間</label>
                     <input type="text" id="time-display" value="0:00" readonly>
@@ -44,6 +49,7 @@
                         <button class="wide" data-value="0">0</button><button id="clear-time-btn">C</button>
                     </div>
                 </div>
+                <!-- 右側: 番号・色 入力 -->
                 <div class="details-inputs">
                     <div class="input-group">
                         <label>番号</label>
@@ -62,6 +68,7 @@
                 </div>
             </div>
             
+            <!-- イベント入力エリア -->
             <div class="input-group full-width">
                 <label>イベント</label>
                 <div id="primary-event-buttons" class="button-group primary-events">
@@ -86,10 +93,8 @@
                 </div>
             </div>
 
+            <!-- 退水管理テーブル -->
             <div class="input-group full-width exclusion-management">
-                <div class="records-header">
-                    <button id="add-record-btn" class="primary-btn">記録を追加</button>
-                </div>
                 <label>退水管理</label>
                 <div class="table-wrapper">
                     <table id="exclusion-table">
@@ -113,7 +118,11 @@
                 </div>
             </div>
 
+            <!-- 記録一覧表示エリア -->
             <section class="records-section">
+                <div class="records-header">
+                    <button id="add-record-btn" class="primary-btn">記録を追加</button>
+                </div>
                 <div class="table-wrapper">
                     <table id="records-main-table">
                         <thead>
@@ -132,7 +141,8 @@
         </main>
     </div>
 
-    <div id="confirm-modal" class="modal-overlay" style="display: none;">
+    <!-- ポップアップウィンドウ (モーダル) -->
+    <div id="confirm-modal" class="modal-overlay">
         <div class="modal-content">
             <p>本当にすべての記録をリセットしますか？<br>この操作は元に戻せません。</p>
             <div class="modal-actions">
@@ -142,7 +152,7 @@
         </div>
     </div>
 
-    <div id="edit-number-modal" class="modal-overlay" style="display: none;">
+    <div id="edit-number-modal" class="modal-overlay">
         <div class="modal-content">
             <h3>背番号を修正</h3>
             <p>新しい背番号を選択してください。</p>

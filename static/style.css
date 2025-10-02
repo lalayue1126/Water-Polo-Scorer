@@ -46,10 +46,10 @@ h1 {
 }
 
 .match-info {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: auto 1fr 1fr 1fr;
     gap: 1rem;
-    align-items: stretch;
+    align-items: center;
     margin-bottom: 1.5rem;
 }
 
@@ -76,7 +76,7 @@ h1 {
 
 .score-board {
     display: grid;
-    grid-template-columns: 4fr 0.5fr 0.5fr;
+    grid-template-columns: 0.5fr auto auto;
     align-items: center;
     font-size: 1.2rem;
     font-weight: bold;

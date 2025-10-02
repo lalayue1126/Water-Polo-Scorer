@@ -1,12 +1,10 @@
 /**
  * 水球スコア記録アプリのメインスクリプト
- * @author Your Name
- * @version 2.0.0
+ * @version 2.2.0
  */
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- HTML要素の取得 ---
-    // アプリケーション全体で使うHTML要素をここで一括で取得します。
     const matchDateInput = document.getElementById('match-date');
     const teamNameWhiteInput = document.getElementById('team-name-white');
     const teamNameBlueInput = document.getElementById('team-name-blue');
@@ -35,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const editModalCancelBtn = document.getElementById('edit-modal-cancel-btn');
 
     // --- アプリケーションの状態管理 ---
-    // records配列が全ての情報の原本（Single Source of Truth）となります。
     let timeInput = "";
     let records = [];
     let selectedNumber = null;
@@ -45,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ローカルストレージ関連 ---
     /**
-     * 現在の状態（試合情報と記録）をブラウザのローカルストレージに保存します。
+     * 現在の状態をブラウザのローカルストレージに保存します。
      */
     const saveState = () => {
         const appState = {
@@ -125,7 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
             editNumberModal.style.display = 'none';
             recordIdToEdit = null;
         });
-        // 修正用ドロップダウンの選択肢を生成 (1-14, ?)
         for (let i = 1; i <= 14; i++) {
             const option = document.createElement('option');
             option.value = i;
@@ -133,24 +129,21 @@ document.addEventListener('DOMContentLoaded', () => {
             editNumberSelect.appendChild(option);
         }
 
-        loadState(); // アプリ起動時にデータを読み込む
+        loadState();
     };
 
     // --- イベントハンドラ関数 ---
     /**
      * 番号・色・イベントボタンのクリックを処理します。
-     * @param {Event} e - クリックイベント
      */
     const handleButtonClick = (e) => {
         const clickedButton = e.target.closest('button');
         if (!clickedButton || !clickedButton.dataset.value) return;
-
         const container = clickedButton.closest('.button-group');
         if (!container) return; 
-
         const value = clickedButton.dataset.value;
 
-        if (container.id === 'primary-event-buttons' || container.id === 'secondary-event-buttons') {
+        if (container.id.includes('event-buttons')) {
             primaryEventContainer.querySelectorAll('button.selected').forEach(btn => btn.classList.remove('selected'));
             secondaryEventContainer.querySelectorAll('button.selected').forEach(btn => btn.classList.remove('selected'));
             selectedEvent = value;
@@ -164,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * 時間入力電卓のクリックを処理します。
-     * @param {Event} e - クリックイベント
      */
     const handleCalculator = (e) => {
         const button = e.target.closest('button');
@@ -177,14 +169,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * 記録一覧の「修」ボタンのクリックを処理します。
-     * @param {Event} e - クリックイベント
      */
     const handleEditClick = (e) => {
         const idToEdit = Number(e.target.dataset.id);
         const record = records.find(r => r.id === idToEdit);
         if (record) {
             recordIdToEdit = idToEdit;
-            editNumberSelect.value = record.number;
+            editNumberSelect.value = '1';
             editNumberModal.style.display = 'flex';
         }
     };
@@ -213,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newRecord = {
             id: Date.now(),
             time: timeDisplay.value,
-            number: selectedNumber || '-', // 番号不要イベントの場合は'-'を記録
+            number: selectedNumber || '-',
             color: selectedColor,
             event: selectedEvent,
         };
@@ -225,7 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * 指定されたIDの記録を削除します。
-     * @param {Event} e - クリックイベント
      */
     const deleteRecord = (e) => {
         const idToDelete = Number(e.target.dataset.id);
@@ -237,10 +227,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- UI更新・補助関数 ---
     /**
      * 全ての表示（スコアボード、記録一覧、退水管理表）を最新の状態に更新するメイン関数です。
-     * データの状態が変更された後、必ずこの関数が呼び出されます。
      */
     const render = () => {
-        // Step 1: 記録を時系列でソートし、全ての記録のピリオド番号を再計算・再割り当てします。
+        // Step 1: 記録を時系列でソートし、ピリオドを再計算・再割り当て
         records.sort((a, b) => a.id - b.id);
         let periodCounter = 0;
         records.forEach(record => {
@@ -250,21 +239,19 @@ document.addEventListener('DOMContentLoaded', () => {
             record.period = (periodCounter === 0) ? 1 : periodCounter;
         });
 
-        // Step 2: スコアボードのピリオド表示を更新します。
+        // Step 2: スコアボードのピリオド表示を更新
         periodDisplay.textContent = periodCounter;
 
-        // Step 3: 記録一覧テーブルを描画し、同時にスコアを計算します。
+        // Step 3: 記録一覧を描画し、スコアを計算
         recordList.innerHTML = "";
         const isGoalEvent = (event) => event.includes('得点');
 
-        // 表示用にピリオドと時間で並べ替えた、新しい記録のコピーを作成します。
         const displayRecords = [...records].sort((a, b) => {
             if (a.period !== b.period) return a.period - b.period;
             const timeToSec = (time) => time.split(':').reduce((acc, t) => 60 * acc + +t, 0);
             return timeToSec(b.time) - timeToSec(a.time);
         });
 
-        // スコアを計算
         let runningScoreWhite = 0;
         let runningScoreBlue = 0;
         displayRecords.forEach(record => {
@@ -276,8 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         scoreWhiteDisplay.textContent = runningScoreWhite;
         scoreBlueDisplay.textContent = runningScoreBlue;
 
-        // テーブルの各行を生成します。
-        runningScoreWhite = 0; // スコアをリセットし、行ごとの累計を正しく表示します。
+        runningScoreWhite = 0;
         runningScoreBlue = 0;
         displayRecords.forEach((record, index) => {
             const recordId = String(index + 1).padStart(3, '0');
@@ -288,9 +274,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const eventShort = record.event.split(' ')[0];
             const row = document.createElement('tr');
 
-            // ★★★ 変更点: 番号が「？」の場合、更新ボタンを表示するロジック ★★★
-            const isEditable = record.number === '?' && ['E ', 'P ', 'SR ', 'SV ', 'EG '].some(code => record.event.startsWith(code));
+            // ★★★ 変更点: ボタン表示のロジック ★★★
             let actionButtonsHTML = '';
+            // 番号が「？」の場合、修正ボタンのみ表示
             if (record.number === '?') {
                 actionButtonsHTML = `<button class="edit-btn" data-id="${record.id}">修</button>`;
             } 
@@ -304,36 +290,32 @@ document.addEventListener('DOMContentLoaded', () => {
             recordList.appendChild(row);
         });
 
-        // Step 4: 操作ボタンにイベントリスナーを再設定します。
+        // Step 4: 操作ボタンにイベントリスナーを再設定
         document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', deleteRecord));
         document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', handleEditClick));
 
-        // Step 5: 退水管理テーブルを更新します。
+        // Step 5: 退水管理テーブルを更新
         renderExclusionTable();
     };
 
     /**
-     * 退水管理テーブルを記録データに基づいて再描画します。
+     * 退水管理テーブルを再描画します。
      */
     const renderExclusionTable = () => {
         document.querySelectorAll('#exclusion-table-body td').forEach(cell => {
             cell.innerHTML = '';
             cell.classList.remove('excluded');
         });
-
-        const foulEvents = ['E ', 'P ', 'SR ', 'SV ', 'EG '];
+        const foulEvents = ['E ', 'P ', 'SR ', 'SV ', 'EG ', 'PG '];
         const exclusionRecords = records.filter(r => r.number && foulEvents.some(event => r.event.startsWith(event)));
-
         const foulsByPlayer = {};
         exclusionRecords.forEach(record => {
             const key = `${record.color}-${record.number}`;
             if (!foulsByPlayer[key]) foulsByPlayer[key] = [];
-
             const eventCode = record.event.split(' ')[0].replace('EG', 'E').replace('PG', 'P');
             const foulString = `${eventCode}${record.period} ${record.time}`;
             foulsByPlayer[key].push(foulString);
         });
-
         for (const playerKey in foulsByPlayer) {
             const [color, number] = playerKey.split('-');
             const cellId = `fouls-${color === '白' ? 'white' : 'blue'}-${number}`;
@@ -368,7 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const teamWhite = teamNameWhiteInput.value.trim() || '白';
         const teamBlue = teamNameBlueInput.value.trim() || '青';
         if (!matchDate) { alert("試合の日付を入力してください。"); return; }
-
         const sanitizedWhite = teamWhite.replace(/[\s\\/:*?"<>|]/g, '_');
         const sanitizedBlue = teamBlue.replace(/[\s\\/:*?"<>|]/g, '_');
         const filename = `waterpolo_record_${matchDate}_${sanitizedWhite}_vs_${sanitizedBlue}.csv`;
