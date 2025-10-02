@@ -399,7 +399,9 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const updateTimeDisplay = () => {
         timeDisplay.classList.remove('error');
-        let formattedTime = "0:00";
+        const paddedInput = timeInput.padStart(4, '0');
+        const minutes = paddedInput.slice(0, 2);
+        const seconds = paddedInput.slice(2, 4);
         if (timeInput.length === 1) formattedTime = `0:0${timeInput}`;
         else if (timeInput.length === 2) formattedTime = `0:${timeInput}`;
         else if (timeInput.length === 3) formattedTime = `${timeInput.slice(0, 1)}:${timeInput.slice(1)}`;

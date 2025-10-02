@@ -250,10 +250,12 @@ main {
 }
 
 .records-header {
-    display: block;
-    gap: 1rem;
     margin-bottom: 1.5rem;
-    width: 100%
+}
+
+#add-record-btn {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .table-wrapper {
