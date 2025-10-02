@@ -250,14 +250,10 @@ main {
 }
 
 .records-header {
-    display: flex;
+    display: block;
     gap: 1rem;
     margin-bottom: 1.5rem;
-}
-.records-header .primary-btn,
-.records-header .danger-btn {
-    flex: 1;
-    margin: 0;
+    width: 100%
 }
 
 .table-wrapper {
@@ -349,7 +345,6 @@ tbody tr:last-child td { border-bottom: none; }
 .modal-content p { margin-top: 0; margin-bottom: 1.5rem; line-height: 1.6; }
 .modal-actions { display: flex; justify-content: center; gap: 1rem; }
 .modal-actions .secondary-btn, .modal-actions .danger-btn, .modal-actions .primary-btn { flex: 1; margin: 0; }
-.modal-actions .primary-btn { background-color: var(--primary-color); }
 
 #edit-number-modal select {
     width: 100%;

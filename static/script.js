@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * 退水管理テーブルを再描画します。
      */
     const renderExclusionTable = () => {
-        document.querySelectorAll('#exclusion-table-body td').forEach(cell => {
+        document.querySelectorAll('#exclusion-table tbody td').forEach(cell => {
             cell.innerHTML = '';
             cell.classList.remove('excluded');
         });
