@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cell.innerHTML = '';
             cell.classList.remove('excluded');
         });
-        const foulEvents = ['E ', 'P ', 'SR ', 'SV ', 'EG ', 'PG '];
+        const foulEvents = ['E ', 'P ', 'SR ', 'SV '];
         const exclusionRecords = records.filter(r => r.number && foulEvents.some(event => r.event.startsWith(event)));
         const foulsByPlayer = {};
         exclusionRecords.forEach(record => {
@@ -399,21 +399,28 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const updateTimeDisplay = () => {
         timeDisplay.classList.remove('error');
-        const paddedInput = timeInput.padStart(4, '0');
-        const minutes = paddedInput.slice(0, 2);
-        const seconds = paddedInput.slice(2, 4);
-        if (timeInput.length === 1) formattedTime = `0:0${timeInput}`;
-        else if (timeInput.length === 2) formattedTime = `0:${timeInput}`;
-        else if (timeInput.length === 3) formattedTime = `${timeInput.slice(0, 1)}:${timeInput.slice(1)}`;
-        else if (timeInput.length === 4) {
+        let formattedTime = "0:00"; // 1. 初期値を"0:00"に設定
+
+        // 2. 入力された文字数に応じて表示をフォーマット
+        if (timeInput.length === 1) {
+            formattedTime = `0:0${timeInput}`;
+        } else if (timeInput.length === 2) {
+            formattedTime = `0:${timeInput}`;
+        } else if (timeInput.length === 3) {
+            formattedTime = `${timeInput.slice(0, 1)}:${timeInput.slice(1)}`;
+        } else if (timeInput.length === 4) {
             const minutes = parseInt(timeInput.slice(0, 1), 10);
-            const rawSeconds = timeInput.slice(1,3);
+            const seconds = timeInput.slice(1, 3);
+            // 4桁入力時の不正なフォーマットを修正
             if (minutes <= 8) {
-                 formattedTime = `${minutes}:${rawSeconds}${timeInput.slice(3)}`;
+                 formattedTime = `${minutes}:${seconds}`; 
             } else {
-                 formattedTime = timeDisplay.value; 
+                 // 8分を超える入力があった場合は、最後の入力を無効にする
+                 timeInput = timeInput.slice(0, 3);
+                 formattedTime = `${timeInput.slice(0, 1)}:${timeInput.slice(1)}`;
             }
         }
+
         timeDisplay.value = formattedTime;
     };
 
