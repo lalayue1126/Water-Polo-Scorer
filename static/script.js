@@ -229,72 +229,67 @@ document.addEventListener('DOMContentLoaded', () => {
      * 全ての表示（スコアボード、記録一覧、退水管理表）を最新の状態に更新するメイン関数です。
      */
     const render = () => {
-        // Step 1: 記録を時系列でソートし、ピリオドを再計算・再割り当て
+        // Step 1: 記録を時系列でソートし、ピリオド、途中経過スコア、記録番号を事前に計算
         records.sort((a, b) => a.id - b.id);
+
         let periodCounter = 0;
-        records.forEach(record => {
+        let runningScoreWhite = 0;
+        let runningScoreBlue = 0;
+        const isGoalEvent = (event) => event.includes('得点');
+
+        // 各recordオブジェクトに計算結果を保存
+        records.forEach((record, index) => {
+            record.chronologicalId = String(index + 1).padStart(3, '0'); // 記録番号をここで確定
             if (record.event.includes('センターボール')) {
                 periodCounter++;
             }
             record.period = (periodCounter === 0) ? 1 : periodCounter;
-        });
-
-        // Step 2: スコアボードのピリオド表示を更新
-        periodDisplay.textContent = periodCounter;
-
-        // Step 3: 記録一覧を描画し、スコアを計算
-        recordList.innerHTML = "";
-        const isGoalEvent = (event) => event.includes('得点');
-
-        const displayRecords = [...records].sort((a, b) => {
-            if (a.period !== b.period) return a.period - b.period;
-            const timeToSec = (time) => time.split(':').reduce((acc, t) => 60 * acc + +t, 0);
-            return timeToSec(b.time) - timeToSec(a.time);
-        });
-
-        let runningScoreWhite = 0;
-        let runningScoreBlue = 0;
-        displayRecords.forEach(record => {
             if (isGoalEvent(record.event)) {
                 if (record.color === '白') runningScoreWhite++;
                 else runningScoreBlue++;
             }
+            record.scoreWhite = runningScoreWhite;
+            record.scoreBlue = runningScoreBlue;
         });
+
+        // Step 2: スコアボードの最終スコアとピリオドを更新
+        periodDisplay.textContent = periodCounter;
         scoreWhiteDisplay.textContent = runningScoreWhite;
         scoreBlueDisplay.textContent = runningScoreBlue;
 
-        runningScoreWhite = 0;
-        runningScoreBlue = 0;
-        displayRecords.forEach((record, index) => {
-            const recordId = String(index + 1).padStart(3, '0');
-            if (isGoalEvent(record.event)) {
-                if (record.color === '白') runningScoreWhite++;
-                else runningScoreBlue++;
-            }
+        // Step 3: 表示用に、記録を「ピリオドは降順」「時間は昇順」にソート
+        const displayRecords = [...records].sort((a, b) => {
+            if (a.period !== b.period) return b.period - a.period;
+            const timeToSec = (time) => time.split(':').reduce((acc, t) => 60 * acc + +t, 0);
+            return timeToSec(a.time) - timeToSec(b.time);
+        });
+
+        // Step 4: 記録一覧を描画
+        recordList.innerHTML = "";
+        displayRecords.forEach(record => {
             const eventShort = record.event.split(' ')[0];
             const row = document.createElement('tr');
 
-            // ★★★ 変更点: ボタン表示のロジック ★★★
             let actionButtonsHTML = '';
-            // 番号が「？」の場合、修正ボタンのみ表示
             if (record.number === '?') {
                 actionButtonsHTML = `<button class="edit-btn" data-id="${record.id}">修</button>`;
-            } 
-            // 番号が確定している場合、削除ボタンのみ表示
-            else {
+            } else {
                 actionButtonsHTML = `<button class="delete-btn" data-id="${record.id}">×</button>`;
             }
 
-            row.innerHTML = `<td>${recordId}</td><td>${record.period}</td><td>${record.time}</td><td>${record.number}</td><td class="${record.color === '白' ? 'white-cell' : 'blue-cell'}">${record.color}</td><td>${eventShort}</td><td>${runningScoreWhite}</td><td>${runningScoreBlue}</td>
+            // ★★★★★ 修正点 ★★★★★
+            // 未定義の`recordId`を`record.chronologicalId`に修正。
+            // スコア表示を`record.scoreWhite`と`record.scoreBlue`に修正。
+            row.innerHTML = `<td>${record.chronologicalId}</td><td>${record.period}</td><td>${record.time}</td><td>${record.number}</td><td class="${record.color === '白' ? 'white-cell' : 'blue-cell'}">${record.color}</td><td>${eventShort}</td><td>${record.scoreWhite}</td><td>${record.scoreBlue}</td>
                              <td class="actions-cell">${actionButtonsHTML}</td>`;
             recordList.appendChild(row);
         });
 
-        // Step 4: 操作ボタンにイベントリスナーを再設定
+        // Step 5: 操作ボタンにイベントリスナーを再設定
         document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', deleteRecord));
         document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', handleEditClick));
 
-        // Step 5: 退水管理テーブルを更新
+        // Step 6: 退水管理テーブルを更新
         renderExclusionTable();
     };
 
@@ -302,30 +297,49 @@ document.addEventListener('DOMContentLoaded', () => {
      * 退水管理テーブルを再描画します。
      */
     const renderExclusionTable = () => {
+        // Step 1: テーブルの全セルをクリア
         document.querySelectorAll('#exclusion-table tbody td').forEach(cell => {
             cell.innerHTML = '';
             cell.classList.remove('excluded');
         });
+
         const foulEvents = ['E ', 'P ', 'SR ', 'SV '];
-        const exclusionRecords = records.filter(r => r.number && foulEvents.some(event => r.event.startsWith(event)));
-        const foulsByPlayer = {};
+
+        // Step 2: ファウル関連の記録を抽出
+        const exclusionRecords = records.filter(r => r.number && r.number !== '?' && foulEvents.some(event => r.event.startsWith(event)));
+
+        const foulCounts = {}; // ファウル数を管理するオブジェクト
+
+        // Step 3: 全てのファウル記録をループ処理
         exclusionRecords.forEach(record => {
             const key = `${record.color}-${record.number}`;
-            if (!foulsByPlayer[key]) foulsByPlayer[key] = [];
-            const eventCode = record.event.split(' ')[0].replace('EG', 'E').replace('PG', 'P');
-            const foulString = `${eventCode}${record.period} ${record.time}`;
-            foulsByPlayer[key].push(foulString);
-        });
-        for (const playerKey in foulsByPlayer) {
-            const [color, number] = playerKey.split('-');
-            const cellId = `fouls-${color === '白' ? 'white' : 'blue'}-${number}`;
+            const cellId = `fouls-${record.color === '白' ? 'white' : 'blue'}-${record.number}`;
             const cell = document.getElementById(cellId);
+
             if (cell) {
-                cell.innerHTML = foulsByPlayer[playerKey].join('<br>');
-                if (foulsByPlayer[playerKey].length >= 3 || foulsByPlayer[playerKey].some(f => f.startsWith('SV'))) {
-                    cell.classList.add('excluded');
-                }
+                // 新しい<div>要素を作成してファウル情報を格納
+                const foulElement = document.createElement('div');
+                const eventCode = record.event.split(' ')[0].replace('EG', 'E').replace('PG', 'P');
+                foulElement.textContent = `${eventCode}${record.period} ${record.time}`;
+
+                // ★★★ prepend() を使って、セルの【一番上】に新しい要素を追加 ★★★
+                cell.prepend(foulElement);
+
+                // ファウル数をカウントアップ
+                if (!foulCounts[key]) foulCounts[key] = { count: 0, hasSV: false };
+                foulCounts[key].count++;
+                if (record.event.startsWith('SV ')) foulCounts[key].hasSV = true;
             }
+        });
+
+        // Step 4: ファウル数に応じてセルの背景色を更新
+        for (const key in foulCounts) {
+             const [color, number] = key.split('-');
+             const cellId = `fouls-${color === '白' ? 'white' : 'blue'}-${number}`;
+             const cell = document.getElementById(cellId);
+             if (cell && (foulCounts[key].count >= 3 || foulCounts[key].hasSV)) {
+                 cell.classList.add('excluded');
+             }
         }
     };
 
