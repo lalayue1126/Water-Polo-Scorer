@@ -1,6 +1,6 @@
 /**
  * 水球スコア記録アプリのメインスクリプト
- * @version 2.2.0
+ * @version 2.3.0 (改良版)
  */
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -33,12 +33,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const editModalCancelBtn = document.getElementById('edit-modal-cancel-btn');
 
     // --- アプリケーションの状態管理 ---
-    let timeInput = "";
-    let records = [];
-    let selectedNumber = null;
-    let selectedColor = null;
-    let selectedEvent = null;
-    let recordIdToEdit = null;
+    // グローバル変数を減らし、状態を一元管理
+    const state = {
+        timeInput: "",
+        records: [],
+        selectedNumber: null,
+        selectedColor: null,
+        selectedEvent: null,
+        recordIdToEdit: null
+    };
 
     // --- ローカルストレージ関連 ---
     /**
@@ -49,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
             matchDate: matchDateInput.value,
             teamWhite: teamNameWhiteInput.value,
             teamBlue: teamNameBlueInput.value,
-            records: records
+            records: state.records
         };
         localStorage.setItem('waterPoloAppState', JSON.stringify(appState));
     };
@@ -61,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedState = localStorage.getItem('waterPoloAppState');
         if (savedState) {
             const appState = JSON.parse(savedState);
-            records = appState.records || [];
+            state.records = appState.records || [];
             matchDateInput.value = appState.matchDate || new Date().toISOString().split('T')[0];
             teamNameWhiteInput.value = appState.teamWhite || '';
             teamNameBlueInput.value = appState.teamBlue || '';
@@ -81,20 +84,20 @@ document.addEventListener('DOMContentLoaded', () => {
         teamNameWhiteInput.addEventListener('input', () => { updateTeamLabels(); saveState(); });
         teamNameBlueInput.addEventListener('input', () => { updateTeamLabels(); saveState(); });
         matchDateInput.addEventListener('change', saveState);
-        playerNumberContainer.addEventListener('click', handleButtonClick);
-        teamColorContainer.addEventListener('click', handleButtonClick);
-        primaryEventContainer.addEventListener('click', handleButtonClick);
-        secondaryEventContainer.addEventListener('click', handleButtonClick);
+        playerNumberContainer.addEventListener('click', handleSelection);
+        teamColorContainer.addEventListener('click', handleSelection);
+        primaryEventContainer.addEventListener('click', handleSelection);
+        secondaryEventContainer.addEventListener('click', handleSelection);
         calculatorButtons.addEventListener('click', handleCalculator);
-        clearTimeBtn.addEventListener('click', () => { timeInput = ""; updateTimeDisplay(); });
+        clearTimeBtn.addEventListener('click', () => { state.timeInput = ""; updateTimeDisplay(); });
         addRecordBtn.addEventListener('click', addRecord);
         exportCsvBtn.addEventListener('click', exportCsv);
+        resetAllBtn.addEventListener('click', () => confirmModal.style.display = 'flex');
 
         // 全記録リセットの確認モーダル
-        resetAllBtn.addEventListener('click', () => confirmModal.style.display = 'flex');
         modalCancelBtn.addEventListener('click', () => confirmModal.style.display = 'none');
         modalConfirmBtn.addEventListener('click', () => {
-            records = [];
+            state.records = [];
             localStorage.removeItem('waterPoloAppState');
             teamNameWhiteInput.value = '';
             teamNameBlueInput.value = '';
@@ -105,10 +108,20 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmModal.style.display = 'none';
         });
 
+        // 記録一覧の操作（削除・修正）はイベントデリゲーションで処理
+        recordList.addEventListener('click', (e) => {
+            const target = e.target;
+            if (target.matches('.delete-btn')) {
+                deleteRecord(Number(target.dataset.id));
+            } else if (target.matches('.edit-btn')) {
+                handleEditClick(Number(target.dataset.id));
+            }
+        });
+
         // 番号修正モーダルの処理
         editModalSaveBtn.addEventListener('click', () => {
-            if (recordIdToEdit) {
-                const record = records.find(r => r.id === recordIdToEdit);
+            if (state.recordIdToEdit !== null) {
+                const record = state.records.find(r => r.id === state.recordIdToEdit);
                 if (record) {
                     record.number = editNumberSelect.value;
                     render();
@@ -116,11 +129,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             editNumberModal.style.display = 'none';
-            recordIdToEdit = null;
+            state.recordIdToEdit = null;
         });
         editModalCancelBtn.addEventListener('click', () => {
             editNumberModal.style.display = 'none';
-            recordIdToEdit = null;
+            state.recordIdToEdit = null;
         });
         for (let i = 1; i <= 14; i++) {
             const option = document.createElement('option');
@@ -136,21 +149,23 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * 番号・色・イベントボタンのクリックを処理します。
      */
-    const handleButtonClick = (e) => {
+    const handleSelection = (e) => {
         const clickedButton = e.target.closest('button');
         if (!clickedButton || !clickedButton.dataset.value) return;
+
         const container = clickedButton.closest('.button-group');
-        if (!container) return; 
+        if (!container) return;
         const value = clickedButton.dataset.value;
 
+        // イベントボタンの場合、両方のコンテナから選択状態を解除
         if (container.id.includes('event-buttons')) {
             primaryEventContainer.querySelectorAll('button.selected').forEach(btn => btn.classList.remove('selected'));
             secondaryEventContainer.querySelectorAll('button.selected').forEach(btn => btn.classList.remove('selected'));
-            selectedEvent = value;
-        } else {
+            state.selectedEvent = value;
+        } else { // 番号、チームカラーボタンの場合
             container.querySelectorAll('button.selected').forEach(btn => btn.classList.remove('selected'));
-            if (container.id === 'player-number-buttons') selectedNumber = value;
-            if (container.id === 'team-color-buttons') selectedColor = value;
+            if (container.id === 'player-number-buttons') state.selectedNumber = value;
+            if (container.id === 'team-color-buttons') state.selectedColor = value;
         }
         clickedButton.classList.add('selected');
     };
@@ -161,8 +176,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleCalculator = (e) => {
         const button = e.target.closest('button');
         if (!button || !button.dataset.value) return;
-        if (timeInput.length < 4) {
-            timeInput += button.dataset.value;
+        if (state.timeInput.length < 4) {
+            state.timeInput += button.dataset.value;
             updateTimeDisplay();
         }
     };
@@ -170,33 +185,66 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * 記録一覧の「修」ボタンのクリックを処理します。
      */
-    const handleEditClick = (e) => {
-        const idToEdit = Number(e.target.dataset.id);
-        const record = records.find(r => r.id === idToEdit);
+    const handleEditClick = (idToEdit) => {
+        const record = state.records.find(r => r.id === idToEdit);
         if (record) {
-            recordIdToEdit = idToEdit;
-            editNumberSelect.value = '1';
+            state.recordIdToEdit = idToEdit;
+            // 修正：現在の番号をデフォルトで選択する
+            editNumberSelect.value = record.number;
             editNumberModal.style.display = 'flex';
         }
     };
 
     // --- コアロジック関数 ---
     /**
+     * records配列を受け取り、ピリオドやスコアなどの派生データを計算して新しい配列を返します。
+     * @param {Array} originalRecords - 元の記録配列
+     * @returns {Array} - 計算済みのプロパティが追加された新しい記録配列
+     */
+    const processRecords = (originalRecords) => {
+        const sortedById = [...originalRecords].sort((a, b) => a.id - b.id);
+        let periodCounter = 1;
+        let runningScoreWhite = 0;
+        let runningScoreBlue = 0;
+        const isGoalEvent = (event) => event.includes('得点');
+
+        return sortedById.map((record, index) => {
+            // 最初のセンターボール以外でピリオドをインクリメント
+            if (index > 0 && record.event.includes('センターボール')) {
+                periodCounter++;
+            }
+            if (isGoalEvent(record.event)) {
+                if (record.color === '白') runningScoreWhite++;
+                else runningScoreBlue++;
+            }
+            return {
+                ...record,
+                chronologicalId: String(index + 1).padStart(3, '0'),
+                period: periodCounter,
+                scoreWhite: runningScoreWhite,
+                scoreBlue: runningScoreBlue,
+            };
+        });
+    };
+
+    /**
      * 入力された情報に基づいて新しい記録を追加します。
      */
     const addRecord = () => {
         const timeValue = timeDisplay.value;
         const [minutes, seconds] = timeValue.split(':').map(Number);
+
         if (seconds >= 60) { alert("秒数は59以下で入力してください。"); timeDisplay.classList.add('error'); return; }
         if (minutes > 8 || (minutes === 8 && seconds > 0)) { alert("エラー: 時間は8:00以内で入力してください。"); timeDisplay.classList.add('error'); return; }
 
         const numberOptionalEvents = ['TO タイムアウト', 'YC イエローカード', 'RC レッドカード'];
-        if (!timeValue || timeValue === "0:00" || !selectedColor || !selectedEvent) {
+        if (!timeValue || timeValue === "0:00" || !state.selectedColor || !state.selectedEvent) {
             alert("時間、色、イベントは必ず選択してください。");
             return;
         }
-        const isNumberRequired = !numberOptionalEvents.some(event => selectedEvent.includes(event));
-        if (isNumberRequired && !selectedNumber) {
+
+        const isNumberRequired = !numberOptionalEvents.some(event => state.selectedEvent.includes(event));
+        if (isNumberRequired && !state.selectedNumber) {
             alert("このイベントには選手番号の選択が必要です。（不明な場合は「？」を選択してください）");
             return;
         }
@@ -204,11 +252,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const newRecord = {
             id: Date.now(),
             time: timeDisplay.value,
-            number: selectedNumber || '-',
-            color: selectedColor,
-            event: selectedEvent,
+            number: state.selectedNumber || '-',
+            color: state.selectedColor,
+            event: state.selectedEvent,
         };
-        records.push(newRecord);
+        state.records.push(newRecord);
         render();
         resetInputs();
         saveState();
@@ -217,9 +265,8 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * 指定されたIDの記録を削除します。
      */
-    const deleteRecord = (e) => {
-        const idToDelete = Number(e.target.dataset.id);
-        records = records.filter(record => record.id !== idToDelete);
+    const deleteRecord = (idToDelete) => {
+        state.records = state.records.filter(record => record.id !== idToDelete);
         render();
         saveState();
     };
@@ -229,38 +276,19 @@ document.addEventListener('DOMContentLoaded', () => {
      * 全ての表示（スコアボード、記録一覧、退水管理表）を最新の状態に更新するメイン関数です。
      */
     const render = () => {
-        // Step 1: 記録を時系列でソートし、ピリオド、途中経過スコア、記録番号を事前に計算
-        records.sort((a, b) => a.id - b.id);
+        // Step 1: 記録データにピリオドやスコアを計算して追加 (副作用なし)
+        const processedRecords = processRecords(state.records);
 
-        let periodCounter = 0;
-        let runningScoreWhite = 0;
-        let runningScoreBlue = 0;
-        const isGoalEvent = (event) => event.includes('得点');
+        // Step 2: スコアボードを更新
+        const lastRecord = processedRecords[processedRecords.length - 1];
+        periodDisplay.textContent = lastRecord ? lastRecord.period : 1;
+        scoreWhiteDisplay.textContent = lastRecord ? lastRecord.scoreWhite : 0;
+        scoreBlueDisplay.textContent = lastRecord ? lastRecord.scoreBlue : 0;
 
-        // 各recordオブジェクトに計算結果を保存
-        records.forEach((record, index) => {
-            record.chronologicalId = String(index + 1).padStart(3, '0'); // 記録番号をここで確定
-            if (record.event.includes('センターボール')) {
-                periodCounter++;
-            }
-            record.period = (periodCounter === 0) ? 1 : periodCounter;
-            if (isGoalEvent(record.event)) {
-                if (record.color === '白') runningScoreWhite++;
-                else runningScoreBlue++;
-            }
-            record.scoreWhite = runningScoreWhite;
-            record.scoreBlue = runningScoreBlue;
-        });
-
-        // Step 2: スコアボードの最終スコアとピリオドを更新
-        periodDisplay.textContent = periodCounter;
-        scoreWhiteDisplay.textContent = runningScoreWhite;
-        scoreBlueDisplay.textContent = runningScoreBlue;
-
-        // Step 3: 表示用に、記録を「ピリオドは降順」「時間は昇順」にソート
-        const displayRecords = [...records].sort((a, b) => {
+        // Step 3: 表示用に、記録を「ピリオド降順」「時間昇順」にソート
+        const displayRecords = [...processedRecords].sort((a, b) => {
             if (a.period !== b.period) return b.period - a.period;
-            const timeToSec = (time) => time.split(':').reduce((acc, t) => 60 * acc + +t, 0);
+            const timeToSec = (time) => time.split(':').reduce((acc, t) => 60 * acc + Number(t), 0);
             return timeToSec(a.time) - timeToSec(b.time);
         });
 
@@ -269,77 +297,70 @@ document.addEventListener('DOMContentLoaded', () => {
         displayRecords.forEach(record => {
             const eventShort = record.event.split(' ')[0];
             const row = document.createElement('tr');
+            const actionButtonsHTML = (record.number === '?')
+                ? `<button class="edit-btn" data-id="${record.id}">修</button>`
+                : `<button class="delete-btn" data-id="${record.id}">×</button>`;
 
-            let actionButtonsHTML = '';
-            if (record.number === '?') {
-                actionButtonsHTML = `<button class="edit-btn" data-id="${record.id}">修</button>`;
-            } else {
-                actionButtonsHTML = `<button class="delete-btn" data-id="${record.id}">×</button>`;
-            }
-
-            // ★★★★★ 修正点 ★★★★★
-            // 未定義の`recordId`を`record.chronologicalId`に修正。
-            // スコア表示を`record.scoreWhite`と`record.scoreBlue`に修正。
-            row.innerHTML = `<td>${record.chronologicalId}</td><td>${record.period}</td><td>${record.time}</td><td>${record.number}</td><td class="${record.color === '白' ? 'white-cell' : 'blue-cell'}">${record.color}</td><td>${eventShort}</td><td>${record.scoreWhite}</td><td>${record.scoreBlue}</td>
-                             <td class="actions-cell">${actionButtonsHTML}</td>`;
+            row.innerHTML = `
+                <td>${record.chronologicalId}</td>
+                <td>${record.period}</td>
+                <td>${record.time}</td>
+                <td>${record.number}</td>
+                <td class="${record.color === '白' ? 'white-cell' : 'blue-cell'}">${record.color}</td>
+                <td>${eventShort}</td>
+                <td>${record.scoreWhite}</td>
+                <td>${record.scoreBlue}</td>
+                <td class="actions-cell">${actionButtonsHTML}</td>`;
             recordList.appendChild(row);
         });
 
-        // Step 5: 操作ボタンにイベントリスナーを再設定
-        document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', deleteRecord));
-        document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', handleEditClick));
-
-        // Step 6: 退水管理テーブルを更新
-        renderExclusionTable();
+        // Step 5: 退水管理テーブルを更新 (計算済みデータを渡す)
+        renderExclusionTable(processedRecords);
     };
 
     /**
      * 退水管理テーブルを再描画します。
      */
-    const renderExclusionTable = () => {
-        // Step 1: テーブルの全セルをクリア
-        document.querySelectorAll('#exclusion-table tbody td').forEach(cell => {
+    const renderExclusionTable = (processedRecords) => {
+        const tableCells = document.querySelectorAll('#exclusion-table tbody td');
+        tableCells.forEach(cell => {
             cell.innerHTML = '';
             cell.classList.remove('excluded');
         });
 
         const foulEvents = ['E ', 'P ', 'SR ', 'SV '];
+        const exclusionRecords = processedRecords.filter(r =>
+            r.number && foulEvents.some(event => r.event.startsWith(event))
+        );
 
-        // Step 2: ファウル関連の記録を抽出
-        const exclusionRecords = records.filter(r => r.number && r.number !== '?' && foulEvents.some(event => r.event.startsWith(event)));
+        const foulCounts = {};
 
-        const foulCounts = {}; // ファウル数を管理するオブジェクト
-
-        // Step 3: 全てのファウル記録をループ処理
         exclusionRecords.forEach(record => {
             const key = `${record.color}-${record.number}`;
-            const cellId = `fouls-${record.color === '白' ? 'white' : 'blue'}-${record.number}`;
-            const cell = document.getElementById(cellId);
+            if (!foulCounts[key]) {
+                foulCounts[key] = { count: 0, hasSV: false, entries: [] };
+            }
 
-            if (cell) {
-                // 新しい<div>要素を作成してファウル情報を格納
-                const foulElement = document.createElement('div');
-                const eventCode = record.event.split(' ')[0].replace('EG', 'E').replace('PG', 'P');
-                foulElement.textContent = `${eventCode}${record.period} ${record.time}`;
-
-                // ★★★ prepend() を使って、セルの【一番上】に新しい要素を追加 ★★★
-                cell.prepend(foulElement);
-
-                // ファウル数をカウントアップ
-                if (!foulCounts[key]) foulCounts[key] = { count: 0, hasSV: false };
-                foulCounts[key].count++;
-                if (record.event.startsWith('SV ')) foulCounts[key].hasSV = true;
+            const eventCode = record.event.split(' ')[0].replace('EG', 'E').replace('PG', 'P');
+            const entryText = `${eventCode}${record.period} ${record.time}`;
+            foulCounts[key].entries.push(entryText);
+            foulCounts[key].count++;
+            if (record.event.startsWith('SV ')) {
+                foulCounts[key].hasSV = true;
             }
         });
 
-        // Step 4: ファウル数に応じてセルの背景色を更新
         for (const key in foulCounts) {
-             const [color, number] = key.split('-');
-             const cellId = `fouls-${color === '白' ? 'white' : 'blue'}-${number}`;
-             const cell = document.getElementById(cellId);
-             if (cell && (foulCounts[key].count >= 3 || foulCounts[key].hasSV)) {
-                 cell.classList.add('excluded');
-             }
+            const [color, number] = key.split('-');
+            const cellId = `fouls-${color === '白' ? 'white' : 'blue'}-${number}`;
+            const cell = document.getElementById(cellId);
+            if (cell) {
+                // 新しい順に表示するために逆順にする
+                cell.innerHTML = foulCounts[key].entries.reverse().join('<br>');
+                if (foulCounts[key].count >= 3 || foulCounts[key].hasSV) {
+                    cell.classList.add('excluded');
+                }
+            }
         }
     };
 
@@ -347,45 +368,44 @@ document.addEventListener('DOMContentLoaded', () => {
      * 入力フォームとボタンの選択状態をリセットします。
      */
     const resetInputs = () => {
-        timeInput = "";
+        state.timeInput = "";
         updateTimeDisplay();
         document.querySelectorAll('.button-group button.selected').forEach(btn => btn.classList.remove('selected'));
-        selectedNumber = null;
-        selectedColor = null;
-        selectedEvent = null;
+        state.selectedNumber = null;
+        state.selectedColor = null;
+        state.selectedEvent = null;
     };
 
     /**
      * 記録をCSV形式でダウンロードします。
      */
     const exportCsv = () => {
-        if (records.length === 0) { alert("エクスポートする記録がありません。"); return; }
+        if (state.records.length === 0) { alert("エクスポートする記録がありません。"); return; }
         const matchDate = matchDateInput.value;
+        if (!matchDate) { alert("試合の日付を入力してください。"); return; }
+
         const teamWhite = teamNameWhiteInput.value.trim() || '白';
         const teamBlue = teamNameBlueInput.value.trim() || '青';
-        if (!matchDate) { alert("試合の日付を入力してください。"); return; }
         const sanitizedWhite = teamWhite.replace(/[\s\\/:*?"<>|]/g, '_');
         const sanitizedBlue = teamBlue.replace(/[\s\\/:*?"<>|]/g, '_');
         const filename = `waterpolo_record_${matchDate}_${sanitizedWhite}_vs_${sanitizedBlue}.csv`;
-        let csvContent = "No,ピリオド,時間,番号,色,イベント,得点(白),得点(青)\n";
 
-        const sortedRecords = [...records].sort((a, b) => {
+        let csvContent = `試合日,${matchDate}\n`;
+        csvContent += `チーム(白),${teamWhite}\n`;
+        csvContent += `チーム(青),${teamBlue}\n\n`;
+        csvContent += "No,ピリオド,時間,番号,色,イベント,得点(白),得点(青)\n";
+
+        // ロジックを共通化: processRecordsを使い、CSV用のソートを適用
+        const processedRecords = processRecords(state.records);
+        const sortedForCsv = [...processedRecords].sort((a, b) => {
             if (a.period !== b.period) return a.period - b.period;
-            const timeToSec = (time) => time.split(':').reduce((acc, t) => 60 * acc + +t, 0);
-            return timeToSec(b.time) - timeToSec(a.time);
+            const timeToSec = (time) => time.split(':').reduce((acc, t) => 60 * acc + Number(t), 0);
+            return timeToSec(b.time) - timeToSec(a.time); // 時間は降順
         });
 
-        let runningScoreWhite = 0;
-        let runningScoreBlue = 0;
-        const isGoalEvent = (event) => event.includes('得点');
-        sortedRecords.forEach((record, index) => {
-            const recordId = String(index + 1).padStart(3, '0');
-            if (isGoalEvent(record.event)) {
-                if (record.color === '白') runningScoreWhite++;
-                else runningScoreBlue++;
-            }
+        sortedForCsv.forEach(record => {
             const eventShort = record.event.split(' ')[0];
-            const row = [recordId, record.period, record.time, record.number, record.color, eventShort, runningScoreWhite, runningScoreBlue].join(',');
+            const row = [record.chronologicalId, record.period, record.time, record.number, record.color, eventShort, record.scoreWhite, record.scoreBlue].join(',');
             csvContent += row + "\n";
         });
 
@@ -393,8 +413,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = filename;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
 
@@ -413,28 +436,30 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const updateTimeDisplay = () => {
         timeDisplay.classList.remove('error');
-        let formattedTime = "0:00"; // 1. 初期値を"0:00"に設定
+        let formattedTime = "0:00";
+        const len = state.timeInput.length;
 
-        // 2. 入力された文字数に応じて表示をフォーマット
-        if (timeInput.length === 1) {
-            formattedTime = `0:0${timeInput}`;
-        } else if (timeInput.length === 2) {
-            formattedTime = `0:${timeInput}`;
-        } else if (timeInput.length === 3) {
-            formattedTime = `${timeInput.slice(0, 1)}:${timeInput.slice(1)}`;
-        } else if (timeInput.length === 4) {
-            const minutes = parseInt(timeInput.slice(0, 1), 10);
-            const seconds = timeInput.slice(1, 3);
-            // 4桁入力時の不正なフォーマットを修正
-            if (minutes <= 8) {
-                 formattedTime = `${minutes}:${seconds}`; 
+        if (len === 1) {
+            formattedTime = `0:0${state.timeInput}`;
+        } else if (len === 2) {
+            formattedTime = `0:${state.timeInput}`;
+        } else if (len === 3) {
+            formattedTime = `${state.timeInput[0]}:${state.timeInput.slice(1)}`;
+        } else if (len === 4) {
+            // 修正: 4桁入力時のフォーマット (例: 1234 -> 12:34 ではなく、800 より大きい時間を考慮)
+            const minutes = parseInt(state.timeInput.slice(0, 1), 10);
+            const seconds = parseInt(state.timeInput.slice(1, 3), 10); // 例 759 -> 7:59
+            // このロジックは3桁までの入力を想定しているため、4桁目は実質的に8分以上のチェック
+            if (minutes > 8 || (minutes === 8 && seconds > 0)) {
+                // 不正な場合は最後の入力を無効にする
+                state.timeInput = state.timeInput.slice(0, 3);
+                formattedTime = `${state.timeInput[0]}:${state.timeInput.slice(1)}`;
             } else {
-                 // 8分を超える入力があった場合は、最後の入力を無効にする
-                 timeInput = timeInput.slice(0, 3);
-                 formattedTime = `${timeInput.slice(0, 1)}:${timeInput.slice(1)}`;
+                 // 4桁目が入力されても、3桁として扱う (例: 7590 -> 7:59)
+                const validTime = state.timeInput.slice(0, 3);
+                formattedTime = `${validTime[0]}:${validTime.slice(1)}`;
             }
         }
-
         timeDisplay.value = formattedTime;
     };
 
